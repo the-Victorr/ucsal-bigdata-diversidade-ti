@@ -1,0 +1,5 @@
+nivel_lideranca_id,nivel_lideranca_codigo,nivel_lideranca_nome,descricao,cbo_grandes_grupos,degrau_funil,criado_em,atualizado_em
+1,1,Liderança,"CBO grande grupo 1 — membros superiores do poder público, dirigentes de organizações de interesse público e de empresas, gerentes",1,1,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
+2,2,Profissional,"CBO grande grupo 2 — profissionais das ciências e das artes (inclui as famílias 2122, 2123 e 2124, núcleo técnico qualificado de TI)",2,2,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
+3,3,Técnico/Base,"Demais grandes grupos CBO — 0 (forças armadas e segurança), 3 (técnicos de nível médio), 4 a 9 (serviços administrativos, serviços, produção, manutenção)","0,3,4,5,6,7,8,9",3,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
+4,9,Não classificado,Reservado a vínculos cujo CBO está ausente ou fora do domínio da CBO 2002 (p.ex. 999999). Fica FORA do funil para não inflar artificialmente a base da pirâmide,-,99,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00

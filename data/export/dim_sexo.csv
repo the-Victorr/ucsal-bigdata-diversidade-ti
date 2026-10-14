@@ -1,0 +1,4 @@
+sexo_id,sexo_codigo,sexo_nome,codigo_rais,codigo_caged,declarado,ordem,criado_em,atualizado_em
+1,1,Masculino,1.0,1,True,1,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
+2,2,Feminino,2.0,3,True,2,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
+3,9,Não identificado,,9,False,9,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00

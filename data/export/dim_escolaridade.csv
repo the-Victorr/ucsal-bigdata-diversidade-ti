@@ -1,0 +1,13 @@
+escolaridade_id,escolaridade_codigo,escolaridade_nome,nome_curto,superior_completo,pos_graduacao,codigo_rais,codigo_caged,ordem,criado_em,atualizado_em
+1,1,Analfabeto,Analfabeto,False,False,1.0,1.0,1,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
+2,2,Até o 5º ano incompleto do Ensino Fundamental,Fund. I inc.,False,False,2.0,2.0,2,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
+3,3,5º ano completo do Ensino Fundamental,Fund. I,False,False,3.0,3.0,3,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
+4,4,Do 6º ao 9º ano do Ensino Fundamental incompleto,Fund. II inc.,False,False,4.0,4.0,4,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
+5,5,Ensino Fundamental completo,Fundamental,False,False,5.0,5.0,5,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
+6,6,Ensino Médio incompleto,Médio inc.,False,False,6.0,6.0,6,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
+7,7,Ensino Médio completo,Médio,False,False,7.0,7.0,7,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
+8,8,Educação Superior incompleta,Superior inc.,False,False,8.0,8.0,8,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
+9,9,Educação Superior completa,Superior,True,False,9.0,9.0,9,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
+10,10,Mestrado completo,Mestrado,True,True,10.0,10.0,10,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
+11,11,Doutorado completo,Doutorado,True,True,11.0,11.0,11,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
+12,99,Não informada,Não informada,False,False,,,99,2026-10-13 23:33:37.830968+00:00,2026-10-13 23:33:37.830968+00:00
