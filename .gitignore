@@ -12,13 +12,12 @@
 !terraform/
 !terraform/**
 
+# Em docs/ o repositorio leva so o dicionario de dados.
+# As respostas das etapas sao entregues como PDF, na raiz.
 !docs/
-!docs/**
-# material de estudo da prova, nao faz parte do projeto
-docs/guia_prova/
-# versoes anteriores dos PDFs da etapa 1, o entregue esta na raiz
-docs/Etapa 1 - Levantamento de Parametros e Tipagem de Dados.pdf
-docs/Etapa 1 - Versao Simplificada.pdf
+docs/*
+!docs/dicionario/
+!docs/dicionario/**
 
 # Base tratada: é entregável, vai para o repositório.
 !data/
