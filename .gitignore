@@ -1,0 +1,45 @@
+# Ignora tudo por padrão e libera só o que é do projeto.
+*
+
+!.gitignore
+!.env.example
+!README.md
+
+!etl/
+!etl/**
+!sql/
+!sql/**
+!terraform/
+!terraform/**
+
+!docs/
+!docs/**
+# material de estudo da prova, nao faz parte do projeto
+docs/guia_prova/
+# versoes anteriores dos PDFs da etapa 1, o entregue esta na raiz
+docs/Etapa 1 - Levantamento de Parametros e Tipagem de Dados.pdf
+docs/Etapa 1 - Versao Simplificada.pdf
+
+# Base tratada: é entregável, vai para o repositório.
+!data/
+!data/export/
+!data/export/**
+!data/curated/
+!data/curated/**
+
+# Entregáveis em PDF
+!Etapa 1 Levantamento de Parâmetros e Tipagem de Dados - v2.pdf
+!Etapa 2 Unificacao, Tratamento, Modelagem e Armazenamento.pdf
+
+# Nunca versionar
+.env
+__pycache__/
+*.pyc
+.DS_Store
+.venv/
+data/raw/
+data/processed/
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/.terraform.lock.hcl
