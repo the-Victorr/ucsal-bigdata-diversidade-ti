@@ -44,3 +44,5 @@ terraform/*.tfstate.*
 terraform/.terraform.lock.hcl
 
 terraform/terraform.tfvars
+
+acesso-leitura.txt
