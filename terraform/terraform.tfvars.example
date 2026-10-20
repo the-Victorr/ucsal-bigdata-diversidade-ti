@@ -1,0 +1,4 @@
+# Copie para terraform.tfvars e preencha. O arquivo real nao vai para o repositorio.
+# O token tambem pode vir de variavel de ambiente: export TF_VAR_aiven_api_token=...
+
+aiven_project = "ucsal-bigdata-2026"
