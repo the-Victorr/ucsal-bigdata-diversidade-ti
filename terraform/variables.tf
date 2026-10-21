@@ -16,15 +16,15 @@ variable "service_name" {
 }
 
 variable "cloud_name" {
-  description = "Provedor e regiao. O servico do projeto esta em digitalocean-sfo."
+  description = "Provedor e regiao, no formato do Aiven. O servico do projeto esta em do-sfo (DigitalOcean, San Francisco)."
   type        = string
-  default     = "digitalocean-sfo"
+  default     = "do-sfo"
 }
 
 variable "plan" {
-  description = "Plano do servico. free-1-5gb e o nivel gratuito, com 1 GB de armazenamento."
+  description = "Plano do servico. free-1-1gb e o nivel gratuito: 1 CPU, 1 GB de RAM e 1 GB de armazenamento."
   type        = string
-  default     = "free-1-5gb"
+  default     = "free-1-1gb"
 }
 
 variable "pg_version" {

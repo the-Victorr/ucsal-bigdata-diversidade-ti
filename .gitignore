@@ -46,3 +46,4 @@ terraform/.terraform.lock.hcl
 terraform/terraform.tfvars
 
 acesso-leitura.txt
+terraform/.terraform.lock.hcl
