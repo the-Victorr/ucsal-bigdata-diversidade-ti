@@ -29,6 +29,8 @@ docs/*
 # Entregáveis em PDF
 !Etapa 1 Levantamento de Parâmetros e Tipagem de Dados - v2.pdf
 !Etapa 2 Unificacao, Tratamento, Modelagem e Armazenamento.pdf
+!Etapa 2 Criterios de Inclusao e Exclusao - v2.pdf
+!Etapa 3 Infraestrutura, Seguranca e Documentacao.pdf
 
 # Nunca versionar
 .env
