@@ -334,6 +334,8 @@ O comando instala as dependências, confere o arquivo de ambiente e sobe o paine
 
 ![Funil de liderança, composição do setor, remuneração e recorte por estado](docs/imagens/dashboard-funil-interseccional.jpg)
 
+![Comparativo entre 2024 e 2025, degrau por degrau](docs/imagens/dashboard-comparativo-anos.jpg)
+
 ### Como ele conversa com o banco
 
 O navegador não fala PostgreSQL, então existe uma camada de API no meio. Cada acesso
@@ -372,6 +374,23 @@ está olhando gênero ou raça isoladamente.
 grupo tem a menor fatia dos postos. Para pessoas negras é a chefia, com 27,5%. Para
 mulheres e para mulheres negras é o degrau profissional, com 30,5% e 10,3%, e essa
 diferença entre os recortes é o achado mais interessante do projeto.
+
+### O painel comparativo
+
+Além dos quatro indicadores, o dashboard traz um painel que mede a mudança entre o ano
+selecionado e o anterior, degrau por degrau. Ele existe porque o número agregado engana:
+a participação de um grupo pode subir no setor inteiro e, ao mesmo tempo, a distância
+entre a chefia e a base aumentar, se o ganho se concentrar embaixo. Foi exatamente o que
+aconteceu com a população negra entre 2024 e 2025.
+
+O painel mostra as duas medições lado a lado, a variação em pontos percentuais de cada
+degrau, e o índice de afunilamento nos dois anos. O texto de leitura é gerado a partir
+dos próprios números: quando detecta participação crescendo junto com afunilamento
+piorando, ele nomeia o caso como inclusão sem avanço na progressão de carreira, e sempre
+lembra que dois anos não sustentam afirmação de tendência.
+
+Ele só aparece quando o ano anterior está carregado. Selecionando 2024, que é o primeiro
+ano da base, o painel some em vez de mostrar comparação vazia.
 
 ### Filtros
 

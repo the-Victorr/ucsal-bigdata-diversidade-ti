@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import {
   ArrowDownRight, ArrowUpRight, Banknote, CloudOff, Download, Filter, MapPin,
-  Moon, RefreshCw, Scale, Sun, Target, TrendingDown, TriangleAlert, UserRound, Users,
+  CalendarRange, Moon, RefreshCw, Scale, Sun, Target, TrendingDown, TriangleAlert,
+  UserRound, Users,
 } from "lucide-react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -13,7 +14,8 @@ import { estilos } from "@/components/ui/estilos";
 import type { Dados } from "@/lib/indicadores";
 import {
   CATEGORIAS, DEGRAUS, calcularKpis, composicaoDoDegrau, cruzamentos, fluxoPor,
-  inteiro, pct, rankingUf, real, somaPor, totalDoRecorte, type Recorte, type Tom,
+  comparacaoEntreAnos, inteiro, pct, rankingUf, real, somaPor, totalDoRecorte,
+  type Recorte, type Tom,
 } from "@/lib/calculos";
 
 gsap.registerPlugin(useGSAP);
@@ -240,6 +242,80 @@ function TabelaFluxo({ dados, recorte }: { dados: Dados; recorte: Recorte }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+function Comparativo({ dados, recorte, categoria, rotulo }: {
+  dados: Dados; recorte: Recorte; categoria: string; rotulo: string;
+}) {
+  const c = comparacaoEntreAnos(dados, recorte, categoria);
+  if (!c) return null;
+
+  const tom: Tom = recorte === "sexo" ? "violet" : "coral";
+  const maior = Math.max(1, ...c.degraus.flatMap((d) => [d.antes, d.agora]));
+  const sinal = (v: number) => `${v >= 0 ? "+" : "\u2212"}${Math.abs(v).toFixed(1).replace(".", ",")}`;
+
+  return (
+    <>
+      <div className="gd-comp">
+        {c.degraus.map((d) => (
+          <div className="gd-comp-linha" key={d.degrau}>
+            <div className="gd-comp-rotulo">
+              <strong>{d.nome}</strong>
+              <small>{d.descricao}</small>
+            </div>
+            <div className="gd-comp-barras">
+              {([[c.anoAnterior, d.antes, false], [c.ano, d.agora, true]] as const).map(
+                ([ano, valor, atual]) => (
+                  <div className="gd-comp-par" key={ano} data-atual={atual}>
+                    <span>{ano}</span>
+                    <span className="gd-comp-trilha" role="img"
+                      aria-label={`${d.nome} em ${ano}: ${pct(valor)}`}>
+                      <i data-tone={tom} style={{ width: `${(valor / maior) * 100}%` }} />
+                      <b>{pct(valor)}</b>
+                    </span>
+                  </div>
+                ),
+              )}
+            </div>
+            <span className="gd-comp-delta" data-sobe={d.variacao >= 0}>
+              {sinal(d.variacao)} p.p.
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="gd-comp-resumo">
+        <div>
+          <span>No setor como um todo</span>
+          <strong>{sinal(c.total.variacao)} p.p.</strong>
+          <span>de {pct(c.total.antes)} em {c.anoAnterior} para {pct(c.total.agora)} em {c.ano}</span>
+        </div>
+        <div>
+          <span>Distância entre a chefia e a base</span>
+          <strong>
+            {c.afunilamento.antes.toFixed(3).replace(".", ",")} &rarr;{" "}
+            {c.afunilamento.agora.toFixed(3).replace(".", ",")}
+          </strong>
+          <span>
+            {Math.abs(c.afunilamento.variacao) < 0.002
+              ? "praticamente estável de um ano para o outro"
+              : c.afunilamento.variacao < 0
+                ? "o funil apertou, a chefia ficou mais distante da base"
+                : "o funil abriu, a chefia ficou mais perto da base"}
+          </span>
+        </div>
+      </div>
+
+      <p className="gd-nota">
+        <strong>Como ler:</strong>{" "}
+        {c.inclusaoSemProgressao
+          ? `a participação de ${rotulo} subiu ${sinal(c.total.variacao)} ponto no setor, então entrou mais gente. Mas o maior ganho foi em ${c.maiorGanho.nome.toLowerCase()}, com ${sinal(c.maiorGanho.variacao)} ponto, e a razão entre a chefia e a base caiu. Houve inclusão sem avanço na progressão de carreira: o setor abriu a porta de entrada mais do que abriu o caminho para cima.`
+          : `comparando ${c.anoAnterior} com ${c.ano}, a participação de ${rotulo} variou ${sinal(c.total.variacao)} ponto no setor, e o maior movimento aconteceu em ${c.maiorGanho.nome.toLowerCase()}.`}
+        {" "}Dois anos não bastam para falar em tendência, e variações pequenas podem ser
+        apenas oscilação de um ano para o outro.
+      </p>
+    </>
   );
 }
 
@@ -474,6 +550,15 @@ export default function PainelDiversidade({ inicial }: { inicial: Dados | null }
                       <Rosca dados={dados} recorte={recorte} />
                     </Painel>
                   </div>
+
+                  {dados.anoAnterior && (
+                    <Painel classe="gd-comparativo"
+                      titulo={`O que mudou de ${dados.anoAnterior} para ${dados.filtros.ano}`}
+                      subtitulo={`A mesma participação de ${rotuloFoco}, medida nos dois anos, degrau por degrau. A barra apagada é o ano anterior e a cheia é o ano selecionado. Serve para responder se o setor está mesmo mudando ou só parece.`}
+                      acao={<span className="gd-legend"><span><CalendarRange aria-hidden="true" style={{ width: 13, height: 13 }} />{dados.anoAnterior} contra {dados.filtros.ano}</span></span>}>
+                      <Comparativo dados={dados} recorte={recorte} categoria={categoriaFoco} rotulo={rotuloFoco} />
+                    </Painel>
+                  )}
 
                   <div className="gd-grid-2b">
                     <Painel titulo="Quanto cada grupo recebe"

@@ -209,6 +209,31 @@ export const estilos = `
 .gd-trilha { display: block; height: 5px; border-radius: 999px; overflow: hidden; background: var(--gd-track); }
 .gd-trilha i { display: block; block-size: 100%; border-radius: inherit; background: var(--gd-series); transform-origin: left center; }
 
+/* Comparativo entre dois anos: duas barras por degrau, o ano anterior em tom
+   apagado e o ano selecionado cheio. */
+.gd-comp { display: grid; gap: 13px; }
+.gd-comp-linha { display: grid; grid-template-columns: 104px minmax(0, 1fr) 62px; gap: 11px; align-items: center; }
+.gd-comp-rotulo strong { display: block; font-size: 11.5px; font-weight: 830; }
+.gd-comp-rotulo small { display: block; margin-top: 3px; font-size: 9.5px; color: var(--gd-muted); }
+.gd-comp-barras { display: grid; gap: 4px; min-inline-size: 0; }
+.gd-comp-par { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 7px; align-items: center; }
+.gd-comp-par span:first-child { font-size: 9.5px; color: var(--gd-muted); font-weight: 740; }
+.gd-comp-trilha { position: relative; display: block; block-size: 15px; border-radius: 5px; background: var(--gd-track); overflow: hidden; }
+.gd-comp-trilha i { position: absolute; inset: 0 auto 0 0; display: block; border-radius: inherit; background: var(--gd-series); transform-origin: left center; }
+.gd-comp-par[data-atual="false"] .gd-comp-trilha i { opacity: .42; }
+.gd-comp-trilha b { position: absolute; inset: 0 7px 0 auto; display: flex; align-items: center; font-size: 9.5px; font-weight: 820; color: var(--gd-ink); }
+.gd-comp-delta { text-align: end; font-size: 11px; font-weight: 850; white-space: nowrap; }
+.gd-comp-delta[data-sobe="true"] { color: var(--gd-teal); }
+.gd-comp-delta[data-sobe="false"] { color: var(--gd-coral); }
+.gd-comp-resumo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-block-start: 14px; }
+.gd-comp-resumo div { border: 1px solid var(--gd-line); border-radius: 11px; padding: 10px 12px; background: var(--gd-superficie); }
+.gd-comp-resumo span { display: block; font-size: 10px; color: var(--gd-muted); line-height: 1.35; }
+.gd-comp-resumo strong { display: block; font-size: 19px; font-weight: 840; letter-spacing: -.04em; margin-block: 4px 3px; }
+@media (max-width: 760px) {
+  .gd-comp-linha { grid-template-columns: 78px minmax(0, 1fr) 52px; gap: 7px; }
+  .gd-comp-resumo { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* Tabela do ranking e do fluxo. */
 .gd-tabela-scroll { max-inline-size: 100%; overflow: auto; scrollbar-width: thin; }
 .gd-tabela-scroll table { inline-size: 100%; border-spacing: 0; text-align: start; }

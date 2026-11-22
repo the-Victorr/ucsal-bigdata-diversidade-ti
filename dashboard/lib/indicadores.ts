@@ -39,8 +39,13 @@ export type LinhaFluxo = {
 
 export type Filtros = { ano: number; uf: string | null };
 
+/** Mesmo grão do funil, para o ano imediatamente anterior ao selecionado. */
+export type LinhaAnterior = LinhaFunil;
+
 export type Dados = {
   filtros: Filtros;
+  anoAnterior: number | null;
+  funilAnterior: LinhaAnterior[];
   opcoes: { anos: number[]; ufs: { sigla: string; regiao: string }[] };
   funil: LinhaFunil[];
   remuneracao: LinhaRemuneracao[];
@@ -70,7 +75,7 @@ export async function carregarOpcoes() {
 export async function carregarDados(ano: number, uf: string | null): Promise<Dados> {
   const p = [ano, uf];
 
-  const [opcoes, funil, remuneracao, porUf, fluxo] = await Promise.all([
+  const [opcoes, funil, remuneracao, porUf, fluxo, funilAnterior] = await Promise.all([
     carregarOpcoes(),
 
     // Composição de cada degrau do funil. O degrau 99 ("Não classificado") fica de
@@ -119,10 +124,31 @@ export async function carregarDados(ano: number, uf: string | null): Promise<Dad
         GROUP BY 1, 2`,
       p,
     ),
+
+    // Mesma consulta do funil, um ano atrás. Serve ao painel comparativo e volta
+    // vazia quando o ano anterior não está carregado, caso em que o painel some.
+    consultar(
+      `SELECT degrau_funil, nivel_lideranca_nome, sexo_nome, grupo_racial_ibge,
+              SUM(qtd_vinculos) AS vinculos
+         FROM publico.vw_funil_lideranca
+        WHERE ano = $1 - 1 AND ($2::text IS NULL OR uf_sigla = $2) AND degrau_funil < 99
+        GROUP BY 1, 2, 3, 4`,
+      p,
+    ),
   ]);
+
+  const temAnterior = funilAnterior.length > 0;
 
   return {
     filtros: { ano, uf },
+    anoAnterior: temAnterior ? ano - 1 : null,
+    funilAnterior: funilAnterior.map((r) => ({
+      degrau: num(r.degrau_funil),
+      nivel: String(r.nivel_lideranca_nome),
+      sexo: String(r.sexo_nome),
+      grupoRacial: String(r.grupo_racial_ibge),
+      vinculos: num(r.vinculos),
+    })),
     opcoes,
     funil: funil.map((r) => ({
       degrau: num(r.degrau_funil),

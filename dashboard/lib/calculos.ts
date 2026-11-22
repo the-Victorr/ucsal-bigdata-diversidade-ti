@@ -238,3 +238,46 @@ export function fluxoPor(dados: Dados, recorte: Recorte) {
 export const inteiro = new Intl.NumberFormat("pt-BR");
 export const real = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 export const pct = (v: number, casas = 1) => `${v.toFixed(casas).replace(".", ",")}%`;
+
+/**
+ * Participação da categoria em cada degrau, nos dois anos, com a variação.
+ *
+ * O número agregado do setor esconde onde a mudança aconteceu: a participação
+ * pode subir no total e ainda assim o funil apertar, se o ganho se concentrar
+ * na base. Por isso a comparação é sempre por degrau, nunca só pelo total.
+ */
+export function comparacaoEntreAnos(dados: Dados, recorte: Recorte, categoria: string) {
+  if (!dados.anoAnterior || dados.funilAnterior.length === 0) return null;
+
+  const pctEm = (linhas: LinhaFunil[], degrau: number) =>
+    participacao(somaPor(linhas.filter((l) => l.degrau === degrau), recorte), categoria, recorte);
+
+  const degraus = DEGRAUS.map((d) => {
+    const antes = pctEm(dados.funilAnterior, d.degrau);
+    const agora = pctEm(dados.funil, d.degrau);
+    return { ...d, antes, agora, variacao: agora - antes };
+  });
+
+  const total = {
+    antes: participacao(somaPor(dados.funilAnterior, recorte), categoria, recorte),
+    agora: participacao(somaPor(dados.funil, recorte), categoria, recorte),
+  };
+
+  // Índice de afunilamento: participação na liderança dividida pela da base.
+  const afunilAntes = degraus[2].antes > 0 ? degraus[0].antes / degraus[2].antes : 0;
+  const afunilAgora = degraus[2].agora > 0 ? degraus[0].agora / degraus[2].agora : 0;
+
+  const maiorGanho = degraus.reduce((a, b) => (b.variacao > a.variacao ? b : a));
+
+  return {
+    anoAnterior: dados.anoAnterior,
+    ano: dados.filtros.ano,
+    degraus,
+    total: { ...total, variacao: total.agora - total.antes },
+    afunilamento: { antes: afunilAntes, agora: afunilAgora, variacao: afunilAgora - afunilAntes },
+    maiorGanho,
+    // O caso que interessa ao trabalho: o setor inclui mais, e mesmo assim a
+    // distância entre o topo e a base aumenta.
+    inclusaoSemProgressao: total.agora > total.antes && afunilAgora < afunilAntes,
+  };
+}
