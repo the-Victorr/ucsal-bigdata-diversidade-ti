@@ -292,17 +292,28 @@ function Comparativo({ dados, recorte, categoria, rotulo }: {
           <span>de {pct(c.total.antes)} em {c.anoAnterior} para {pct(c.total.agora)} em {c.ano}</span>
         </div>
         <div>
-          <span>Distância entre a chefia e a base</span>
+          <span>A chefia reflete a base?</span>
           <strong>
-            {c.afunilamento.antes.toFixed(3).replace(".", ",")} &rarr;{" "}
-            {c.afunilamento.agora.toFixed(3).replace(".", ",")}
+            {(Math.round(c.afunilamento.agora * 1000) / 10).toFixed(1).replace(".", ",")} para cada 100
           </strong>
           <span>
-            {Math.abs(c.afunilamento.variacao) < 0.002
-              ? "praticamente estável de um ano para o outro"
-              : c.afunilamento.variacao < 0
-                ? "o funil apertou, a chefia ficou mais distante da base"
-                : "o funil abriu, a chefia ficou mais perto da base"}
+            {(() => {
+              const agora = Math.round(c.afunilamento.agora * 1000) / 10;
+              const antes = Math.round(c.afunilamento.antes * 1000) / 10;
+              const distAgora = Math.abs(agora - 100);
+              const distAntes = Math.abs(antes - 100);
+              const onde = agora < 99
+                ? `${rotulo} ocupam menos cargos de chefia do que a presença delas na base faria esperar`
+                : agora > 101
+                  ? `${rotulo} ocupam mais cargos de chefia do que a presença delas na base faria esperar`
+                  : `a chefia espelha a base quase exatamente`;
+              const rumo = distAgora === distAntes
+                ? `igual a ${c.anoAnterior}`
+                : distAgora < distAntes
+                  ? `mais equilibrado que em ${c.anoAnterior}, quando era ${antes.toFixed(1).replace(".", ",")}`
+                  : `menos equilibrado que em ${c.anoAnterior}, quando era ${antes.toFixed(1).replace(".", ",")}`;
+              return `Se a chefia tivesse a mesma composição da base, seria 100. ${onde[0].toUpperCase()}${onde.slice(1)}, ${rumo}.`;
+            })()}
           </span>
         </div>
       </div>

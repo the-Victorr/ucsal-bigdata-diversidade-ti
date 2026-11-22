@@ -384,7 +384,17 @@ entre a chefia e a base aumentar, se o ganho se concentrar embaixo. Foi exatamen
 aconteceu com a população negra entre 2024 e 2025.
 
 O painel mostra as duas medições lado a lado, quanto o percentual de cada degrau subiu
-ou caiu entre os dois anos, e o índice de afunilamento em cada um. O texto de leitura é gerado a partir
+ou caiu entre os dois anos, e o índice de afunilamento.
+
+Na interface esse índice aparece multiplicado por cem e com a leitura embutida: em vez de
+`0,569`, o painel diz **56,9 para cada 100**, e explica que seriam 100 se a chefia tivesse
+a mesma composição da base. É o mesmo número da análise acima, escrito de um jeito que
+dispensa saber o que é um índice.
+
+A casa decimal não é capricho. Entre 2024 e 2025 o índice vai de 57,5 para 56,9, e
+arredondando para inteiro os dois virariam 57: o painel afirmaria que nada mudou logo
+acima do texto que explica a queda. A precisão exibida precisa ser fina o bastante para
+carregar o achado, em vez de apagá-lo. O texto de leitura é gerado a partir
 dos próprios números: quando detecta participação crescendo junto com afunilamento
 piorando, ele nomeia o caso como inclusão sem avanço na progressão de carreira, e sempre
 lembra que dois anos não sustentam afirmação de tendência.
