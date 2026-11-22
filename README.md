@@ -417,7 +417,7 @@ passam pela supressão de privacidade. Eles são a resposta do projeto às duas 
 
 A base do setor é quase equilibrada. A cada degrau que se sobe, a participação negra
 cai, e no topo ela é pouco mais da metade do que era embaixo. O índice de afunilamento,
-que divide a participação na liderança pela participação na base, fica em 0,57.
+que divide a participação na liderança pela participação na base, fica em 0,569.
 
 Isso é o que a ODS 18 prevê e o dado confirma sem ambiguidade: o problema não é o
 acesso ao setor, é a progressão dentro dele.
@@ -536,7 +536,7 @@ onde a mudança aconteceu. Abrindo a participação negra por degrau:
 
 A base ganhou 1,8 contra 0,6 do degrau profissional, três vezes mais. O índice de
 afunilamento, que divide a participação na liderança pela participação na base, caiu de
-0,574 para 0,569: a distância entre o topo e a base aumentou, ainda que pouco.
+0,575 para 0,569: a distância entre o topo e a base aumentou, ainda que pouco.
 
 Esse é o resultado que muda a conclusão do trabalho. A resposta à pergunta "está
 melhorando?" não é sim nem não. O setor está incluindo mais pessoas negras, e ao mesmo
