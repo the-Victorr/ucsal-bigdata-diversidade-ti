@@ -266,11 +266,6 @@ export default function PainelDiversidade({ inicial }: { inicial: Dados | null }
   const raiz = useRef<HTMLDivElement>(null);
   const corpo = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const preferido = window.matchMedia("(prefers-color-scheme: dark)");
-    setTema(preferido.matches ? "dark" : "light");
-  }, []);
-
   const buscar = useCallback(async (novoAno: number | null, novaUf: string) => {
     setCarregando(true);
     setFalha(null);
