@@ -516,20 +516,20 @@ que a diferença passa de seis pontos.
 
 Com os dois anos carregados dá para medir em vez de inferir:
 
-| | 2024 | 2025 | Variação |
+| | 2024 | 2025 | Diferença |
 |---|---:|---:|---:|
-| Participação feminina | 37,4% | 37,8% | +0,4 p.p. |
-| Participação negra | 38,8% | 39,9% | +1,1 p.p. |
+| Participação feminina | 37,4% | 37,8% | +0,4% |
+| Participação negra | 38,8% | 39,9% | +1,1% |
 | Total de vínculos publicáveis | 671.587 | 695.978 | +3,6% |
 
 O setor ficou mais diverso em um ano, nos dois recortes. Mas o número agregado esconde
 onde a mudança aconteceu. Abrindo a participação negra por degrau:
 
-| Degrau | 2024 | 2025 | Variação |
+| Degrau | 2024 | 2025 | Diferença |
 |---|---:|---:|---:|
-| Técnico/Base | 46,5% | 48,3% | **+1,8 p.p.** |
-| Profissional | 33,6% | 34,2% | +0,6 p.p. |
-| Liderança | 26,7% | 27,5% | +0,8 p.p. |
+| Técnico/Base | 46,5% | 48,3% | **+1,8%** |
+| Profissional | 33,6% | 34,2% | +0,6% |
+| Liderança | 26,7% | 27,5% | +0,8% |
 
 A base ficou mais diversa três vezes mais rápido que o degrau profissional. O índice de
 afunilamento, que divide a participação na liderança pela participação na base, caiu de

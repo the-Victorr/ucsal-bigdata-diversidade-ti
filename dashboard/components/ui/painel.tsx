@@ -279,7 +279,7 @@ function Comparativo({ dados, recorte, categoria, rotulo }: {
               )}
             </div>
             <span className="gd-comp-delta" data-sobe={d.variacao >= 0}>
-              {sinal(d.variacao)} p.p.
+              {sinal(d.variacao)}%
             </span>
           </div>
         ))}
@@ -287,8 +287,8 @@ function Comparativo({ dados, recorte, categoria, rotulo }: {
 
       <div className="gd-comp-resumo">
         <div>
-          <span>No setor como um todo</span>
-          <strong>{sinal(c.total.variacao)} p.p.</strong>
+          <span>Variação no setor como um todo</span>
+          <strong>{sinal(c.total.variacao)}%</strong>
           <span>de {pct(c.total.antes)} em {c.anoAnterior} para {pct(c.total.agora)} em {c.ano}</span>
         </div>
         <div>
