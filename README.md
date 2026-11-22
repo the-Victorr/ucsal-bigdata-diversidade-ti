@@ -32,7 +32,10 @@ O projeto lê os microdados de emprego formal do governo federal, filtra o setor
       esquema publico   6 views com supressão de privacidade
                      │
                      ▼
-              Painel (etapa seguinte)
+         dashboard/            Next.js, consulta as views a cada acesso
+                     │
+                     ▼
+              Painel publicado na Vercel
 ```
 
 ## Dados utilizados
@@ -158,6 +161,7 @@ A chave primária de cada fato é a combinação das 8 dimensões, então o banc
 | Serviço | Papel no projeto |
 |---|---|
 | Aiven for PostgreSQL | banco de dados gerenciado, plano gratuito |
+| Vercel | hospedagem do dashboard e do cron de keep-alive, plano gratuito |
 | FTP do PDET | origem dos microdados |
 | GitHub | versionamento do código e da documentação |
 
@@ -167,7 +171,7 @@ A chave primária de cada fato é a combinação das 8 dimensões, então o banc
 |---|---|
 | Serviço | `ti-diversidade-pg` |
 | Projeto Aiven | `ucsal-bigdata-2026` |
-| Plano | `free-1-5gb`, com 1 GB de armazenamento |
+| Plano | `free-1-1gb`, com 1 GB de armazenamento |
 | Nuvem e região | DigitalOcean, `sfo` |
 | Versão | PostgreSQL 18 |
 | Acesso | internet pública, com TLS obrigatório |
@@ -182,9 +186,43 @@ terraform/outputs.tf                 host, porta e string de conexão
 terraform/terraform.tfvars.example   modelo de preenchimento, sem valores reais
 ```
 
+### Infraestrutura do dashboard
+
+A camada de visualização exigiu hospedagem própria, porque o navegador não conversa
+com PostgreSQL diretamente e é preciso um servidor no meio. Ela roda na Vercel, no
+plano gratuito, a partir da pasta `dashboard/` deste mesmo repositório.
+
+| Recurso | Configuração |
+|---|---|
+| Framework | Next.js 16, App Router |
+| Root directory | `dashboard` |
+| Funções | `/` e `/api/dados`, renderizadas sob demanda |
+| Variáveis | `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD` |
+| Cron | `/api/keep-alive`, a cada dois dias às 9h |
+
+O deploy está automatizado em [`dashboard/deploy.sh`](dashboard/deploy.sh), que roda o
+build, autentica na Vercel, envia as cinco variáveis de ambiente para os três ambientes
+e publica. A declaração do cron fica em `dashboard/vercel.json`, versionada junto do
+código.
+
+O cron existe por um motivo concreto: o plano gratuito do Aiven desliga o serviço depois
+de algumas semanas sem conexão, e isso aconteceu três vezes ao longo do projeto. Com um
+dashboard publicado, uma hibernação significaria a página fora do ar sem aviso. A rota
+`/api/keep-alive` abre uma conexão trivial com o banco, o que basta para o Aiven contar
+o serviço como em uso.
+
+Quando mesmo assim o banco estiver fora, o painel não quebra: a API distingue falha de
+rede de erro de consulta e a interface mostra um aviso explicando que o serviço está
+hibernando, com o caminho para religá-lo no console.
+
 ### Tecnologias empregadas
 
 Python 3.14 com Pandas para o ETL, PyArrow para escrever Parquet, psycopg2 para a carga, 7-Zip de linha de comando para descompactar em fluxo, PostgreSQL 18 como banco, Terraform para a infraestrutura e Git para versionamento.
+
+No dashboard, Next.js 16 com TypeScript, `pg` para falar com o banco, GSAP para as
+animações de entrada e Lucide para os ícones. Os gráficos são SVG escrito à mão, sem
+biblioteca de visualização: o funil precisa de barras empilhadas com número variável de
+categorias, e as bibliotecas prontas que avaliamos assumiam séries de tamanho fixo.
 
 A leitura é feita em blocos com `pandas.read_csv(chunksize=...)`, que mantém o uso de memória constante independente do tamanho do arquivo. A carga usa `COPY` em vez de `INSERT`, o que faz diferença grande no volume que carregamos.
 
@@ -201,6 +239,10 @@ Nenhuma credencial, senha, token ou chave está no repositório.
 **Dados pessoais.** Usamos a versão pública dos microdados, que já vem sem CPF, PIS, nome e data de nascimento. O ETL ainda descarta as colunas de bairro e distrito, que funcionam como quase-identificadores quando combinadas com ocupação e faixa salarial. No banco, as tabelas com o dado completo ficam no esquema interno e as views públicas suprimem qualquer combinação com menos de 5 pessoas. O efeito é grande: das 37.378 linhas do fato de vínculos, 13.239 aparecem na view pública, e das 161.058 do fato de movimentações, 29.087.
 
 **Separação de privilégio.** O schema cria o papel `dashboard_leitura` com permissão apenas de leitura sobre o esquema `publico`. Ele é criado sem login e sem senha de propósito, para que nenhuma credencial fique versionada; quem for usar define a senha no momento de conceder o acesso.
+
+**Credenciais do dashboard.** A aplicação publicada usa esse mesmo `dashboard_leitura`, e não o administrador do banco. A credencial vive nas variáveis de ambiente do projeto na Vercel e, localmente, em `dashboard/.env.local`, que o `.gitignore` cobre e que nunca entrou em nenhum commit. Mesmo que alguém obtenha a credencial a partir do servidor, só alcança as views já suprimidas do esquema `publico`: não lê o esquema `dw` e não escreve nada.
+
+**Superfície exposta pelo dashboard.** As consultas ficam no servidor, não no navegador. O cliente recebe JSON já agregado e nunca envia SQL, então não existe caminho para injeção a partir da interface. Os únicos parâmetros aceitos pela API são ano e UF, ambos passados como parâmetros ligados da consulta e não concatenados no texto do SQL. O ano é convertido para número e descartado se não for finito; a UF entra como texto comparado contra a coluna, de modo que um valor inventado simplesmente não casa com nenhuma linha.
 
 ## Execução
 
@@ -265,30 +307,170 @@ Os passos 4 e 5 podem ser pulados: a base já tratada está em `data/export/` em
 etl/        scripts do pipeline
 sql/        estrutura do banco e consultas de exemplo
 terraform/  infraestrutura como código
-docs/       dicionário de dados
+dashboard/  aplicação de visualização (Next.js)
+docs/       dicionário de dados e imagens do painel
 data/       base tratada em CSV e Parquet
 ```
 
 Os arquivos baixados e os intermediários ficam em `data/raw/` e `data/processed/`, fora do controle de versão por causa do tamanho.
 
+## Dashboard
+
+**Acesso:** PLACEHOLDER_LINK
+
+Para rodar na sua máquina, com o banco já no ar:
+
+```bash
+cd dashboard && npm install && cp .env.example .env.local && npm run dev
+```
+
+As credenciais de leitura para o `.env.local` estão em `acesso-leitura.txt`, entregue
+junto com a documentação. Instruções completas de publicação em `dashboard/README.md`.
+
+![Visão geral do painel](docs/imagens/dashboard-visao-geral.jpg)
+
+![Remuneração e recorte territorial](docs/imagens/dashboard-remuneracao-e-ufs.jpg)
+
+### Como ele conversa com o banco
+
+O navegador não fala PostgreSQL, então existe uma camada de API no meio. Cada acesso
+ao painel dispara uma rota no servidor da Vercel, que abre conexão com o PostgreSQL da
+Aiven, consulta as views do schema `publico` e devolve o resultado agregado em JSON.
+Não há cópia dos dados dentro da aplicação: desligar o banco derruba o painel, o que é
+a prova de que a consulta é mesmo ao vivo.
+
+O usuário usado é o `dashboard_leitura`, que só enxerga o schema `publico` e não
+escreve. Mesmo que alguém consiga a credencial a partir do servidor, não alcança as
+tabelas do schema `dw` nem altera nada.
+
+### Os quatro indicadores
+
+**Participação feminina — 37,8%.** Percentual de mulheres entre os vínculos de TI com
+sexo declarado. Serve de linha de base para tudo o mais: sem saber quantas mulheres o
+setor emprega, nenhum número sobre liderança ou salário tem referência.
+
+**Participação negra — 39,9%.** Percentual de pessoas pretas e pardas entre os vínculos
+com raça/cor declarada, somadas segundo o agrupamento do IBGE. Comparado aos 55,5% da
+população brasileira na PNAD, mostra uma sub-representação de quase 16 pontos antes
+mesmo de olhar para cargos.
+
+**Razão salarial entre mulher negra e homem branco — R$ 45 para cada R$ 100.** Média
+de remuneração do cruzamento mulher negra dividida pela do cruzamento homem branco. É
+o indicador interseccional do painel: ele não pergunta o efeito do gênero nem o da
+raça, pergunta o que acontece quando os dois incidem na mesma pessoa.
+
+**Degrau mais estreito do funil.** Entre os três degraus da hierarquia, aquele em que o
+grupo selecionado tem menor participação. Para pessoas negras o degrau mais estreito é
+a liderança, com 27,5%. Para mulheres é o degrau profissional, com 30,5%, e essa
+diferença entre os dois recortes é o achado mais interessante do projeto.
+
+### Filtros
+
+Ano de referência, unidade da federação (as 27, ou o Brasil inteiro) e recorte da
+análise, que alterna todo o painel entre gênero e raça/cor. Ano e UF vão ao banco e
+refazem a consulta. O recorte é recálculo no navegador, porque a API já devolve as
+linhas abertas por degrau, sexo e raça/cor.
+
+
 ## O que os dados mostram
 
-Participação de cada grupo dentro de cada nível, na RAIS 2025:
+Os números abaixo saem das views do banco para 2025, sobre os 695.978 vínculos que
+passam pela supressão de privacidade. Eles são a resposta do projeto às duas ODS.
 
-| Nível | Branca | Parda | Preta |
-|---|---:|---:|---:|
-| Chefia | 55,2% | 38,8% | 6,0% |
-| Profissional | 51,5% | 40,8% | 7,7% |
-| Base | 35,6% | 56,0% | 8,4% |
+### A desigualdade racial tem o formato clássico de funil
 
-Remuneração média entre quem tem superior completo, comparando pessoas com a mesma qualificação formal:
+| Degrau | Pessoas brancas | Pessoas negras |
+|---|---:|---:|
+| Liderança | 70,6% | 27,5% |
+| Profissional | 63,7% | 34,2% |
+| Técnico/Base | 50,4% | 48,3% |
 
-| | Branca | Parda | Preta |
-|---|---:|---:|---:|
-| Homens | R$ 11.426 | R$ 8.445 | R$ 8.174 |
-| Mulheres | R$ 8.853 | R$ 6.210 | R$ 6.092 |
+A base do setor é quase equilibrada. A cada degrau que se sobe, a participação negra
+cai, e no topo ela é pouco mais da metade do que era embaixo. O índice de afunilamento,
+que divide a participação na liderança pela participação na base, fica em 0,57.
 
-Uma mulher preta com diploma superior ganha 53% do que um homem branco com o mesmo diploma recebe.
+Isso é o que a ODS 18 prevê e o dado confirma sem ambiguidade: o problema não é o
+acesso ao setor, é a progressão dentro dele.
+
+### A desigualdade de gênero tem outro formato, e esse foi o achado inesperado
+
+| Degrau | Mulheres |
+|---|---:|
+| Liderança | 44,2% |
+| Profissional | 30,5% |
+| Técnico/Base | 42,3% |
+
+Se olhássemos só o topo e a base, concluiríamos que não há teto de vidro em TI, porque
+a participação feminina na liderança (44,2%) é maior que na base (42,3%). O índice de
+afunilamento daria 1,05 e o relatório terminaria aqui, errado.
+
+O estrangulamento está no meio. O degrau profissional, que pela CBO concentra os
+analistas, desenvolvedores e demais ocupações técnicas qualificadas, tem 30,5% de
+mulheres, quase doze pontos abaixo da base.
+
+Uma leitura plausível é que mulheres entram em empresas de TI principalmente por
+funções administrativas, de atendimento e de gestão, e não pelas funções técnicas. Isso
+explicaria tanto a base alta quanto a liderança alta: a chefia medida aqui é o grande
+grupo 1 da CBO inteiro, que inclui gerência administrativa, comercial e de pessoas, não
+apenas liderança técnica.
+
+Essa é uma hipótese, não uma conclusão. Para confirmá-la seria preciso abrir o CBO em
+famílias de quatro dígitos em vez do grande grupo, e separar a gerência de TI das
+demais gerências. O grão atual do banco não permite isso, e inventar a conclusão a
+partir do dado que temos seria ir além do que ele sustenta.
+
+De todo modo, a implicação para a ODS 5 muda. Política de promoção de mulheres a cargos
+de chefia não resolveria o gargalo observado, porque o gargalo não está lá. Ele está na
+entrada da carreira técnica.
+
+### As duas desigualdades se multiplicam
+
+| | Pessoas brancas | Pessoas negras |
+|---|---:|---:|
+| Homens | R$ 9.526 | R$ 6.189 |
+| Mulheres | R$ 7.121 | R$ 4.308 |
+
+Isoladamente, mulheres recebem 73,1% do salário masculino e pessoas negras recebem
+63,4% do salário de pessoas brancas. Se os dois efeitos fossem independentes e se
+compusessem por multiplicação, uma mulher negra receberia 46,4% do que recebe um homem
+branco. O valor observado é 45,2%.
+
+A proximidade entre o previsto e o observado é o resultado mais concreto do projeto:
+gênero e raça não se somam, se multiplicam, e ainda há uma penalidade adicional de
+pouco mais de um ponto que nenhum dos dois recortes isolados explica. É exatamente por
+isso que ODS 5 e ODS 18 precisam ser analisadas juntas e não em relatórios separados.
+
+### O fluxo de contratações sugere movimento
+
+| | Composição atual | Entre as admissões de 2025 |
+|---|---:|---:|
+| Mulheres | 37,8% | 40,1% |
+| Pessoas negras | 39,9% | 46,3% |
+
+O setor está contratando mais diverso do que já é, principalmente no recorte racial, em
+que a diferença passa de seis pontos. Mantida essa proporção, a composição do estoque
+tende a se aproximar da composição das admissões ao longo dos anos.
+
+Com um único ano carregado não dá para afirmar que isso é tendência, porque não há série
+histórica para comparar. É uma leitura do momento, e carregar os anos anteriores da RAIS
+pelo mesmo pipeline é o passo natural para verificá-la.
+
+### Limites que o leitor precisa conhecer
+
+Tudo aqui descreve o emprego formal com carteira assinada nas divisões 62 e 63 da CNAE.
+Pessoa jurídica, trabalho informal e profissionais de TI empregados em empresas de outros
+setores, como um banco ou uma indústria, ficam de fora. Em um setor com muita
+contratação PJ, isso é uma limitação real do recorte, não um detalhe.
+
+Os percentuais de raça/cor consideram apenas quem declarou. Vínculos sem declaração
+existem e aparecem no painel como categoria própria, mas não entram no denominador dos
+indicadores, porque misturá-los reduziria todos os percentuais por um motivo que não tem
+relação com desigualdade.
+
+E os totais são do universo publicável. A supressão de combinações com menos de cinco
+vínculos protege a privacidade, mas remove justamente as células menores, que tendem a
+ser as de grupos minoritários em municípios pequenos. A participação de pessoas indígenas
+e amarelas, em especial, é subestimada por esse efeito.
 
 ## Fontes
 
