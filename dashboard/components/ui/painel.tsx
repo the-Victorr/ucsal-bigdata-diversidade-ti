@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import {
   ArrowDownRight, ArrowUpRight, Banknote, CloudOff, Download, Filter, MapPin,
-  Moon, RefreshCw, Scale, Sun, TrendingDown, UserRound, Users,
+  Moon, RefreshCw, Scale, Sun, Target, TrendingDown, TriangleAlert, UserRound, Users,
 } from "lucide-react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -399,6 +399,24 @@ export default function PainelDiversidade({ inicial }: { inicial: Dados | null }
               </div>
             )}
 
+            {kpis?.amostraPequena && (
+              <div className="gd-aviso" role="status">
+                <TriangleAlert aria-hidden="true" />
+                <div>
+                  <strong>Poucos registros neste recorte, leia os percentuais com cuidado</strong>
+                  <p>
+                    Sobraram {inteiro.format(kpis.totalVinculos)} vínculos depois da proteção de
+                    privacidade, que apaga qualquer grupo com menos de cinco pessoas. Quando o
+                    recorte é pequeno, essa proteção remove primeiro os grupos minoritários e
+                    aumenta artificialmente a fatia de quem permaneceu. Um resultado como 100%
+                    aqui significa que os demais grupos foram ocultados, não que eles não existam.
+                    Para comparar grupos com segurança, escolha o Brasil ou um estado com mais
+                    empregos em tecnologia.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div ref={corpo}>
               {carregando && !dados && (
                 <div className="gd-carregando"><span className="gd-spinner" aria-hidden="true" />Consultando o banco…</div>
@@ -502,8 +520,12 @@ export default function PainelDiversidade({ inicial }: { inicial: Dados | null }
               : "Carregando…"}
           </span>
           <span>
+            <Target aria-hidden="true" />
+            ODS 5, Igualdade de Gênero · ODS 18, Igualdade Étnico-Racial
+          </span>
+          <span>
             <Scale aria-hidden="true" />
-            Fonte: RAIS e Novo CAGED (PDET/MTE). Supressão k≥5 aplicada no banco.
+            Fonte: RAIS e Novo CAGED (PDET/MTE). Nenhum grupo com menos de 5 pessoas é exibido.
           </span>
         </footer>
       </div>

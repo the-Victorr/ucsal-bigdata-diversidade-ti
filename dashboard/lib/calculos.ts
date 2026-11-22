@@ -139,6 +139,15 @@ export function cruzamentos(dados: Dados) {
   return combos.map((c) => ({ ...c, media: remuneracaoDe(dados, c.sexo, c.raca) }));
 }
 
+/**
+ * Abaixo deste volume os percentuais deixam de ser confiáveis, e não por ruído
+ * amostral comum. A supressão k>=5 remove as células com menos de cinco vínculos,
+ * e num recorte pequeno ela apaga justamente os grupos minoritários, inflando a
+ * fatia de quem sobrou. Roraima, por exemplo, mostra 100% de pessoas negras na
+ * chefia a partir de 17 vínculos: o número está correto e ainda assim engana.
+ */
+export const VOLUME_MINIMO_CONFIAVEL = 5000;
+
 export type Kpis = ReturnType<typeof calcularKpis>;
 
 export function calcularKpis(dados: Dados, recorte: Recorte) {
@@ -169,6 +178,7 @@ export function calcularKpis(dados: Dados, recorte: Recorte) {
 
   return {
     totalVinculos,
+    amostraPequena: totalVinculos < VOLUME_MINIMO_CONFIAVEL,
     pctFeminino,
     pctNegra,
     razaoInterseccional,

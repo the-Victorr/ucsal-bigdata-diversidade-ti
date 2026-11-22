@@ -496,6 +496,25 @@ Com um único ano carregado não dá para afirmar que isso é tendência, porque
 histórica para comparar. É uma leitura do momento, e carregar os anos anteriores da RAIS
 pelo mesmo pipeline é o passo natural para verificá-la.
 
+### Por que o painel avisa quando o recorte é pequeno
+
+Ao filtrar um estado com pouco emprego formal em TI, o painel mostra um aviso antes dos
+indicadores. O motivo é metodológico e vale registrar.
+
+A supressão de privacidade apaga toda célula com menos de cinco vínculos. Num recorte
+grande isso remove pouca coisa. Num recorte pequeno, remove preferencialmente os grupos
+minoritários, que são justamente os que têm poucas pessoas em cada cruzamento. O que
+sobra fica com a fatia inflada.
+
+Roraima é o caso extremo: dos 104 vínculos que sobrevivem à supressão, os 17 classificados
+como chefia são todos de pessoas negras, e o painel calcularia 100% de participação negra
+na liderança. O número está aritmeticamente correto e mesmo assim é falso como descrição
+da realidade, porque os vínculos de pessoas brancas na chefia de Roraima existem, só não
+puderam ser publicados.
+
+O limite adotado é de cinco mil vínculos no recorte. Abaixo disso o aviso aparece e explica
+o efeito, em vez de deixar o visitante tirar uma conclusão errada de um número certo.
+
 ### Limites que o leitor precisa conhecer
 
 Tudo aqui descreve o emprego formal com carteira assinada nas divisões 62 e 63 da CNAE.
