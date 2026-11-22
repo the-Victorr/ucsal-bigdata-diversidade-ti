@@ -8,7 +8,7 @@ O projeto lê os microdados de emprego formal do governo federal, filtra o setor
 
 ```
   FTP público do PDET / Ministério do Trabalho
-  RAIS 2025 (7 arquivos .7z)   Novo CAGED 2025 (12 arquivos .7z)
+  RAIS 2024 e 2025 (14 arquivos .7z)   Novo CAGED 2024 e 2025 (24 arquivos .7z)
                      │
                      ▼
          etl/download.py        baixa com retomada
@@ -61,7 +61,7 @@ Ano-base 2025 na RAIS e as doze competências de 2025 no CAGED. É o ano mais re
 
 ### Características relevantes
 
-| | RAIS 2025 | Novo CAGED 2025 |
+| | RAIS 2024 e 2025 | Novo CAGED 2024 e 2025 |
 |---|---|---|
 | Arquivos | 7 `.7z`, um por região | 12 `.7z`, um por mês |
 | Tamanho | 3,6 GB compactados | 617 MB compactados |
@@ -100,11 +100,13 @@ Três características pesaram nas decisões técnicas. A primeira é o volume: 
 | Criar nível "Não classificado" | CBO inválido fica fora do funil | `999999` cairia em "base" e inflaria a variável do estudo |
 | Suprimir células pequenas | Views públicas escondem combinações com menos de 5 pessoas | Evita reidentificação em cruzamento fino |
 
-Os critérios de inclusão e exclusão aplicados, com a contagem de cada corte, estão no documento [Etapa 2 Criterios de Inclusao e Exclusao](Etapa%202%20Criterios%20de%20Inclusao%20e%20Exclusao%20-%20v2.pdf). Em resumo: 143.096.379 linhas lidas, 1.760.634 do setor de TI, 1.306.010 válidos depois da limpeza e 198.436 linhas agregadas no banco.
+Os critérios de inclusão e exclusão aplicados, com a contagem de cada corte, estão no documento [Etapa 2 Criterios de Inclusao e Exclusao](Etapa%202%20Criterios%20de%20Inclusao%20e%20Exclusao%20-%20v2.pdf). Os números abaixo são de 2025, o ano usado naquele documento. Com 2024 carregado pelo mesmo pipeline, o total no banco passou a 398.556 linhas agregadas, cobrindo os dois anos.
 
 ### Conferência
 
-Comparamos entrada e saída em cada etapa. Os vínculos no banco somam 696.587, igual ao que o ETL limpou. Admissões mais demissões dão 609.423, também igual. Das 198.436 linhas agregadas, todas encontraram par nas dimensões.
+Comparamos entrada e saída em cada etapa, para os dois anos somados. Os vínculos no banco somam 1.368.740, igual ao que o ETL limpou. Admissões mais demissões dão 1.195.875, também igual. Das 398.556 linhas agregadas, todas encontraram par nas dimensões, o que é a prova de que nenhum código de origem ficou fora do domínio das tabelas conformadas.
+
+A carga de 2024 foi feita reagregando os dois anos juntos e recarregando as tabelas de fato inteiras. O caminho mais curto seria rodar o pipeline só para 2024, mas ele destruiria 2025 por dois motivos: `transform.py` grava sempre no mesmo arquivo de saída, sem o ano no nome, e `load.py` dá `TRUNCATE` na tabela antes de inserir. A conferência depois da carga mostrou que 2025 manteve exatamente as mesmas 37.378 linhas de antes.
 
 ## Modelagem
 
@@ -127,7 +129,7 @@ dim_nivel_ ────┤  fato_movimentacao_ ┼───── dim_faixa_etar
 | Tabela | Linhas | Tamanho | Conteúdo |
 |---|---:|---:|---|
 | `fato_movimentacao_ti` | 161.058 | 26 MB | admissões e demissões por mês |
-| `fato_vinculo_ti` | 37.378 | 7,6 MB | estoque de empregos em 31/12 |
+| `fato_vinculo_ti` | 74.247 | 15 MB | estoque de empregos em 31/12 |
 | `dim_tempo` | 144 | 120 kB | meses de 2015 a 2026 |
 | `dim_uf` | 28 | 112 kB | estados e regiões |
 | `dim_escolaridade` | 12 | 80 kB | do analfabeto ao doutorado |
@@ -136,7 +138,7 @@ dim_nivel_ ────┤  fato_movimentacao_ ┼───── dim_faixa_etar
 | `dim_raca_cor` | 7 | 80 kB | ordem do IBGE |
 | `dim_nivel_lideranca` | 4 | 80 kB | chefia, profissional, base, não classificado |
 | `dim_sexo` | 3 | 80 kB | masculino, feminino, não identificado |
-| Total | 198.436 | 43 MB | 4,2% do limite de 1 GB |
+| Total | 398.556 | 113 MB | 11% do limite de 1 GB |
 
 ### Estratégia de organização dos dados
 
@@ -489,12 +491,42 @@ isso que ODS 5 e ODS 18 precisam ser analisadas juntas e não em relatórios sep
 | Pessoas negras | 39,9% | 46,3% |
 
 O setor está contratando mais diverso do que já é, principalmente no recorte racial, em
-que a diferença passa de seis pontos. Mantida essa proporção, a composição do estoque
-tende a se aproximar da composição das admissões ao longo dos anos.
+que a diferença passa de seis pontos.
 
-Com um único ano carregado não dá para afirmar que isso é tendência, porque não há série
-histórica para comparar. É uma leitura do momento, e carregar os anos anteriores da RAIS
-pelo mesmo pipeline é o passo natural para verificá-la.
+### E, comparando 2024 com 2025, a mudança de fato aconteceu
+
+Com os dois anos carregados dá para medir em vez de inferir:
+
+| | 2024 | 2025 | Variação |
+|---|---:|---:|---:|
+| Participação feminina | 37,4% | 37,8% | +0,4 p.p. |
+| Participação negra | 38,8% | 39,9% | +1,1 p.p. |
+| Total de vínculos publicáveis | 671.587 | 695.978 | +3,6% |
+
+O setor ficou mais diverso em um ano, nos dois recortes. Mas o número agregado esconde
+onde a mudança aconteceu. Abrindo a participação negra por degrau:
+
+| Degrau | 2024 | 2025 | Variação |
+|---|---:|---:|---:|
+| Técnico/Base | 46,5% | 48,3% | **+1,8 p.p.** |
+| Profissional | 33,6% | 34,2% | +0,6 p.p. |
+| Liderança | 26,7% | 27,5% | +0,8 p.p. |
+
+A base ficou mais diversa três vezes mais rápido que o degrau profissional. O índice de
+afunilamento, que divide a participação na liderança pela participação na base, caiu de
+0,574 para 0,569: a distância entre o topo e a base aumentou, ainda que pouco.
+
+Esse é o resultado que muda a conclusão do trabalho. A resposta à pergunta "está
+melhorando?" não é sim nem não. O setor está incluindo mais pessoas negras, e ao mesmo
+tempo a desigualdade de progressão entre o topo e a base está se mantendo, com leve
+piora. A inclusão está concentrada na porta de entrada.
+
+Dois anos são pouco para falar em tendência, e a variação do índice de afunilamento é
+pequena o bastante para caber em flutuação normal. O que os dados sustentam é mais modesto
+e ainda assim relevante: o crescimento da diversidade no setor, no período medido, não
+veio acompanhado de redução do afunilamento. Carregar 2022 e 2023 pelo mesmo pipeline
+diria se isso é um padrão ou um ano atípico, e o pipeline já aceita qualquer ano a partir
+de 2023 sem alteração.
 
 ### Por que o painel avisa quando o recorte é pequeno
 
