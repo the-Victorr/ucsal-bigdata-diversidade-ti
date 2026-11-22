@@ -1,13 +1,14 @@
 -- Consultas de exemplo sobre a base carregada.
 -- Reproduzem os números que aparecem no documento da etapa 2.
+-- O banco tem 2024 e 2025: consultas sem filtro de ano somam os dois.
 -- Rodar conectado ao banco do projeto.
 
 -- 1. Quanto foi carregado
-SELECT 'vinculos (RAIS 2025)'    AS medida, sum(qtd_vinculos)::bigint AS valor FROM dw.fato_vinculo_ti
+SELECT 'vinculos (RAIS, todos os anos)'    AS medida, sum(qtd_vinculos)::bigint AS valor FROM dw.fato_vinculo_ti
 UNION ALL
-SELECT 'admissoes (CAGED 2025)',   sum(admissoes)    FROM dw.fato_movimentacao_ti
+SELECT 'admissoes (CAGED, todos os anos)',   sum(admissoes)    FROM dw.fato_movimentacao_ti
 UNION ALL
-SELECT 'desligamentos (CAGED 2025)', sum(desligamentos) FROM dw.fato_movimentacao_ti
+SELECT 'desligamentos (CAGED, todos os anos)', sum(desligamentos) FROM dw.fato_movimentacao_ti
 UNION ALL
 SELECT 'saldo do ano',              sum(saldo)        FROM dw.fato_movimentacao_ti;
 
@@ -64,7 +65,7 @@ SELECT s.sexo_nome,
  ORDER BY media_salarial DESC;
 
 
--- 6. Rotatividade mensal do setor em 2025
+-- 6. Rotatividade mensal do setor, por competencia
 SELECT t.ano_mes,
        sum(f.admissoes)     AS admissoes,
        sum(f.desligamentos) AS desligamentos,
