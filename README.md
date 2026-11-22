@@ -318,17 +318,20 @@ Os arquivos baixados e os intermediários ficam em `data/raw/` e `data/processed
 
 ## Dashboard
 
-**Acesso:** PLACEHOLDER_LINK
-
-Para rodar na sua máquina, depois de preencher `dashboard/.env.local` com a credencial
-de leitura que está em `acesso-leitura.txt`:
+**Execução local, em um comando.** Depois de preencher `dashboard/.env.local` com a
+credencial de leitura que está em `acesso-leitura.txt`:
 
 ```bash
 cd dashboard && npm run local
 ```
 
 O comando instala as dependências, confere o arquivo de ambiente e sobe o painel em
-`http://localhost:3000`. Instruções de publicação em [`dashboard/README.md`](dashboard/README.md).
+`http://localhost:3000`, lendo o mesmo banco na Aiven que a versão publicada lê. Não há
+cópia local dos dados: se o banco estiver fora do ar, o painel avisa em vez de mostrar
+números defasados.
+
+O passo a passo para publicar na Vercel está em [`dashboard/README.md`](dashboard/README.md),
+e o deploy está automatizado em [`dashboard/deploy.sh`](dashboard/deploy.sh).
 
 ![Os quatro indicadores, no recorte que cruza gênero e raça](docs/imagens/dashboard-visao-geral.jpg)
 
