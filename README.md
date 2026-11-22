@@ -318,18 +318,19 @@ Os arquivos baixados e os intermediários ficam em `data/raw/` e `data/processed
 
 **Acesso:** PLACEHOLDER_LINK
 
-Para rodar na sua máquina, com o banco já no ar:
+Para rodar na sua máquina, depois de preencher `dashboard/.env.local` com a credencial
+de leitura que está em `acesso-leitura.txt`:
 
 ```bash
-cd dashboard && npm install && cp .env.example .env.local && npm run dev
+cd dashboard && npm run local
 ```
 
-As credenciais de leitura para o `.env.local` estão em `acesso-leitura.txt`, entregue
-junto com a documentação. Instruções completas de publicação em `dashboard/README.md`.
+O comando instala as dependências, confere o arquivo de ambiente e sobe o painel em
+`http://localhost:3000`. Instruções de publicação em [`dashboard/README.md`](dashboard/README.md).
 
-![Visão geral do painel](docs/imagens/dashboard-visao-geral.jpg)
+![Os quatro indicadores, no recorte que cruza gênero e raça](docs/imagens/dashboard-visao-geral.jpg)
 
-![Remuneração e recorte territorial](docs/imagens/dashboard-remuneracao-e-ufs.jpg)
+![Funil de liderança, composição do setor, remuneração e recorte por estado](docs/imagens/dashboard-funil-interseccional.jpg)
 
 ### Como ele conversa com o banco
 
@@ -345,31 +346,39 @@ tabelas do schema `dw` nem altera nada.
 
 ### Os quatro indicadores
 
-**Participação feminina — 37,8%.** Percentual de mulheres entre os vínculos de TI com
-sexo declarado. Serve de linha de base para tudo o mais: sem saber quantas mulheres o
-setor emprega, nenhum número sobre liderança ou salário tem referência.
+Os três primeiros botões do painel escolhem o recorte: gênero, raça/cor, ou os dois
+cruzados na mesma pessoa. Os indicadores respondem ao recorte escolhido, de modo que no
+modo cruzado todos os quatro passam a ser interseccionais.
 
-**Participação negra — 39,9%.** Percentual de pessoas pretas e pardas entre os vínculos
-com raça/cor declarada, somadas segundo o agrupamento do IBGE. Comparado aos 55,5% da
-população brasileira na PNAD, mostra uma sub-representação de quase 16 pontos antes
-mesmo de olhar para cargos.
+**No setor.** Percentual que o grupo ocupa entre todos os empregos de TI. É a linha de
+base de tudo o mais: sem saber quanto espaço o grupo tem no setor, nenhum número sobre
+chefia ou salário tem com o que ser comparado. Cada valor vem acompanhado da proporção
+do mesmo grupo na população brasileira, segundo a PNAD, para separar o que é
+sub-representação no setor do que é composição do país. Mulheres são 37,8% do setor e
+51,5% da população; mulheres negras, 15,6% contra 28,6%.
 
-**Razão salarial entre mulher negra e homem branco — R$ 45 para cada R$ 100.** Média
-de remuneração do cruzamento mulher negra dividida pela do cruzamento homem branco. É
-o indicador interseccional do painel: ele não pergunta o efeito do gênero nem o da
-raça, pergunta o que acontece quando os dois incidem na mesma pessoa.
+**Na chefia.** O mesmo percentual, agora só entre os cargos de direção e gerência. Lido
+contra o indicador anterior, mostra se o grupo mantém, ganha ou perde espaço ao subir.
+Mulheres negras são 15,6% do setor e 12,4% da chefia.
 
-**Degrau mais estreito do funil.** Entre os três degraus da hierarquia, aquele em que o
-grupo selecionado tem menor participação. Para pessoas negras o degrau mais estreito é
-a liderança, com 27,5%. Para mulheres é o degrau profissional, com 30,5%, e essa
-diferença entre os dois recortes é o achado mais interessante do projeto.
+**A cada R$ 100 de um homem branco.** Quanto recebe, em média, uma mulher negra no mesmo
+setor: R$ 45. Este é o único indicador que não muda com o recorte, de propósito. Ele
+existe para manter visível o cruzamento das duas desigualdades mesmo quando o usuário
+está olhando gênero ou raça isoladamente.
+
+**Onde o grupo mais perde espaço.** Entre os três degraus da carreira, aquele em que o
+grupo tem a menor fatia dos postos. Para pessoas negras é a chefia, com 27,5%. Para
+mulheres e para mulheres negras é o degrau profissional, com 30,5% e 10,3%, e essa
+diferença entre os recortes é o achado mais interessante do projeto.
 
 ### Filtros
 
-Ano de referência, unidade da federação (as 27, ou o Brasil inteiro) e recorte da
-análise, que alterna todo o painel entre gênero e raça/cor. Ano e UF vão ao banco e
-refazem a consulta. O recorte é recálculo no navegador, porque a API já devolve as
-linhas abertas por degrau, sexo e raça/cor.
+Recorte da análise, com três modos: gênero, raça/cor, e os dois cruzados. Ano de
+referência. Unidade da federação, com as 27 ou o Brasil inteiro.
+
+Ano e UF vão ao banco e refazem a consulta. O recorte é recálculo no navegador, porque
+a API já devolve as linhas abertas por degrau, sexo e raça/cor, e refazer a consulta
+para trocar de recorte seria desperdício.
 
 
 ## O que os dados mostram
@@ -422,6 +431,38 @@ partir do dado que temos seria ir além do que ele sustenta.
 De todo modo, a implicação para a ODS 5 muda. Política de promoção de mulheres a cargos
 de chefia não resolveria o gargalo observado, porque o gargalo não está lá. Ele está na
 entrada da carreira técnica.
+
+### Cruzando os dois recortes, aparece o que nenhum deles mostrava sozinho
+
+Participação de cada grupo em cada degrau, em percentual da linha:
+
+| Degrau | Homem branco | Homem negro | Mulher branca | Mulher negra |
+|---|---:|---:|---:|---:|
+| Liderança | 40,0% | 15,6% | 32,0% | 12,4% |
+| Profissional | 44,8% | 24,7% | 20,3% | 10,3% |
+| Técnico/Base | 29,7% | 27,9% | 21,4% | 21,0% |
+
+A base é quase equilibrada entre os quatro grupos. A partir dali cada um segue um
+caminho diferente, e os caminhos não se parecem.
+
+Homens brancos ganham espaço já no degrau técnico, saltando de 29,7% para 44,8%.
+Mulheres negras fazem o inverso no mesmo ponto, caindo de 21,0% para 10,3%, e não
+recuperam no topo. Homens negros perdem espaço de forma contínua, de 27,9% até 15,6%.
+Mulheres brancas são o único grupo que perde no meio e recupera em cima, indo de 21,4%
+na base a 32,0% na liderança.
+
+Esse último contraste é o resultado mais desconfortável do projeto. Na chefia das
+empresas de TI, mulheres brancas ocupam 32,0% dos postos e homens negros 15,6%, o dobro.
+Em um setor onde homens são a maioria, isso indica que a cor pesa mais que o gênero no
+acesso aos cargos de direção, e que tratar "mulheres" e "pessoas negras" como dois
+blocos homogêneos esconde quem de fato está ficando de fora.
+
+Vale dizer o que esse número não prova. Ele descreve a composição dos cargos, não o
+processo que levou a ela, e a chefia medida aqui inclui gerência administrativa,
+comercial e de pessoas, não apenas liderança técnica. Pode ser que mulheres brancas
+estejam concentradas em gerências de área e homens negros em funções técnicas sem
+cargo de gestão. Verificar isso exigiria abrir o CBO em famílias de quatro dígitos, o
+que o grão atual do banco não permite.
 
 ### As duas desigualdades se multiplicam
 

@@ -13,7 +13,7 @@ import { estilos } from "@/components/ui/estilos";
 import type { Dados } from "@/lib/indicadores";
 import {
   CATEGORIAS, DEGRAUS, calcularKpis, composicaoDoDegrau, cruzamentos, fluxoPor,
-  inteiro, pct, rankingUf, real, somaPor, participacao, type Recorte, type Tom,
+  inteiro, pct, rankingUf, real, somaPor, totalDoRecorte, type Recorte, type Tom,
 } from "@/lib/calculos";
 
 gsap.registerPlugin(useGSAP);
@@ -110,7 +110,7 @@ function Funil({ dados, recorte }: { dados: Dados; recorte: Recorte }) {
 function Rosca({ dados, recorte }: { dados: Dados; recorte: Recorte }) {
   const [ativo, setAtivo] = useState<number | null>(null);
   const mapa = somaPor(dados.funil, recorte);
-  const total = [...mapa.values()].reduce((s, v) => s + v, 0);
+  const total = totalDoRecorte(mapa, recorte);
   const fatias = CATEGORIAS[recorte]
     .map((c) => ({ ...c, vinculos: mapa.get(c.nome) ?? 0 }))
     .filter((f) => f.vinculos > 0)
@@ -302,8 +302,9 @@ export default function PainelDiversidade({ inicial }: { inicial: Dados | null }
   }, { scope: corpo, dependencies: [dados, recorte], revertOnUpdate: true });
 
   const kpis = dados ? calcularKpis(dados, recorte) : null;
-  const categoriaFoco = recorte === "sexo" ? "Feminino" : "Negra";
-  const rotuloFoco = recorte === "sexo" ? "mulheres" : "pessoas negras";
+  const categoriaFoco = kpis?.categoriaFoco ?? "Feminino";
+  const rotuloFoco =
+    recorte === "sexo" ? "mulheres" : recorte === "raca" ? "pessoas negras" : "mulheres negras";
 
   const exportar = () => {
     if (!dados) return;
@@ -350,15 +351,18 @@ export default function PainelDiversidade({ inicial }: { inicial: Dados | null }
               <div>
                 <h1>Raça, gênero e o funil de liderança na TI brasileira</h1>
                 <p>
-                  Vínculos formais das divisões 62 e 63 da CNAE, a partir da RAIS e do Novo CAGED.
-                  Os números vêm ao vivo do banco PostgreSQL hospedado na Aiven, por views que já
-                  suprimem qualquer cruzamento com menos de cinco vínculos.
+                  Quem trabalha nas empresas de tecnologia do Brasil, quem chega aos cargos de
+                  chefia e quanto cada grupo recebe. Os dados são de todos os empregos com
+                  carteira assinada em empresas de TI, declarados pelas próprias empresas ao
+                  Ministério do Trabalho. Use os botões ao lado para ver o mesmo retrato por
+                  gênero, por raça/cor, ou pelos dois cruzados na mesma pessoa.
                 </p>
               </div>
               <div className="gd-view-actions">
                 <div className="gd-period" role="group" aria-label="Recorte da análise">
                   <button type="button" aria-pressed={recorte === "sexo"} onClick={() => setRecorte("sexo")}>Gênero</button>
                   <button type="button" aria-pressed={recorte === "raca"} onClick={() => setRecorte("raca")}>Raça/cor</button>
+                  <button type="button" aria-pressed={recorte === "cruzado"} onClick={() => setRecorte("cruzado")}>Os dois juntos</button>
                 </div>
                 {dados && (
                   <>
@@ -403,62 +407,88 @@ export default function PainelDiversidade({ inicial }: { inicial: Dados | null }
               {dados && kpis && (
                 <>
                   <div className="gd-metric-grid">
-                    <Kpi titulo="Participação feminina" icone={<UserRound />} valor={pct(kpis.pctFeminino)}
-                      delta={pct(kpis.pctFeminino - 50, 1)} alerta={kpis.pctFeminino < 50}
-                      legenda="dos vínculos com sexo declarado, ante a paridade" />
-                    <Kpi titulo="Participação negra" icone={<Users />} valor={pct(kpis.pctNegra)}
-                      delta={pct(kpis.pctNegra - 55.5, 1)} alerta={kpis.pctNegra < 55.5}
-                      legenda="dos vínculos com raça/cor declarada, ante os 55,5% da população (PNAD)" />
-                    <Kpi titulo="Mulher negra x homem branco" icone={<Banknote />} destaque
+                    <Kpi titulo={`No setor · ${rotuloFoco}`} icone={<Users />}
+                      valor={pct(kpis.noSetor)}
+                      delta={kpis.referencia ? pct(kpis.noSetor - kpis.referencia.valor, 1) : undefined}
+                      alerta={!!kpis.referencia && kpis.noSetor < kpis.referencia.valor}
+                      legenda={kpis.referencia
+                        ? `de cada 100 pessoas empregadas em TI. São ${pct(kpis.referencia.valor, 1)} ${kpis.referencia.fonte}`
+                        : "de cada 100 pessoas empregadas em TI"} />
+
+                    <Kpi titulo={`Na chefia · ${rotuloFoco}`} icone={<UserRound />}
+                      valor={pct(kpis.naLideranca)}
+                      delta={pct(kpis.naLideranca - kpis.noSetor, 1)}
+                      alerta={kpis.naLideranca < kpis.noSetor}
+                      legenda={`dos cargos de direção e gerência. ${
+                        kpis.naLideranca < kpis.noSetor
+                          ? "Menos espaço no topo do que no setor como um todo"
+                          : "Mais espaço no topo do que no setor como um todo"}`} />
+
+                    <Kpi titulo="A cada R$ 100 de um homem branco" icone={<Banknote />} destaque
                       valor={kpis.razaoInterseccional > 0 ? `R$ ${kpis.razaoInterseccional.toFixed(0)}` : "—"}
                       delta={kpis.razaoInterseccional > 0 ? pct(kpis.razaoInterseccional - 100, 0) : undefined}
                       alerta={kpis.razaoInterseccional < 100}
-                      legenda="recebidos por uma mulher negra a cada R$ 100 de um homem branco" />
-                    <Kpi titulo={`Degrau mais estreito · ${rotuloFoco}`} icone={<TrendingDown />}
+                      legenda="é o que recebe, em média, uma mulher negra no mesmo setor" />
+
+                    <Kpi titulo="Onde o grupo mais perde espaço" icone={<TrendingDown />}
                       valor={pct(kpis.afunilamento.maisEstreito.pct)}
                       delta={kpis.afunilamento.maisEstreito.nome}
                       alerta={kpis.afunilamento.maisEstreito.pct < kpis.afunilamento.naBase}
-                      legenda={`menor participação ao longo do funil, contra ${pct(kpis.afunilamento.naBase)} na base e ${pct(kpis.afunilamento.naLideranca)} na liderança`} />
+                      legenda={`é o degrau da carreira em que ${rotuloFoco} têm a menor fatia dos postos`} />
                   </div>
 
                   <div className="gd-grid-2">
                     <Painel titulo="O funil de liderança"
-                      subtitulo="Composição de cada degrau da hierarquia, pelo grande grupo da CBO do vínculo. A comparação entre a primeira e a última linha é o indicador central do projeto."
+                      subtitulo="Pense na carreira em tecnologia como uma escada de três degraus. Embaixo estão os cargos de apoio e suporte. No meio, quem faz o trabalho técnico: programar, analisar, projetar sistemas. No topo, quem dirige e gerencia. Cada barra mostra como aquele degrau se divide entre os grupos."
                       acao={<Legenda itens={kpis.categoriasPresentes} />}>
                       <Funil dados={dados} recorte={recorte} />
                       <p className="gd-nota">
+                        <strong>Como ler:</strong>{" "}
                         {kpis.afunilamento.gargaloNoMeio
-                          ? `Neste recorte o estrangulamento não está no topo: ${rotuloFoco} são ${pct(kpis.afunilamento.naBase)} da base e ${pct(kpis.afunilamento.naLideranca)} da liderança, mas apenas ${pct(kpis.afunilamento.maisEstreito.pct)} do degrau profissional, que concentra o trabalho técnico.`
-                          : `A participação cai de ${pct(kpis.afunilamento.naBase)} na base para ${pct(kpis.afunilamento.naLideranca)} na liderança, um afunilamento de ${kpis.afunilamento.indice.toFixed(2).replace(".", ",")}.`}
-                        {" "}Vínculos sem CBO válido ficam fora do funil, para não inflar artificialmente a base da pirâmide.
+                          ? `se o grupo tivesse o mesmo espaço em todos os degraus, as três barras teriam fatias do mesmo tamanho. Aqui ${rotuloFoco} ocupam ${pct(kpis.afunilamento.naBase)} da base e ${pct(kpis.afunilamento.naLideranca)} da chefia, mas só ${pct(kpis.afunilamento.maisEstreito.pct)} do degrau do meio. O aperto não está no topo da escada, está no meio dela, justamente onde fica o trabalho técnico.`
+                          : `se o grupo tivesse o mesmo espaço em todos os degraus, as três barras teriam fatias do mesmo tamanho. Aqui a fatia encolhe conforme a escada sobe: ${rotuloFoco} são ${pct(kpis.afunilamento.naBase)} da base e apenas ${pct(kpis.afunilamento.naLideranca)} da chefia.`}
+                        {" "}Quem tem o cargo em branco no registro do governo fica de fora desta conta.
                       </p>
                     </Painel>
-                    <Painel titulo="Composição do setor"
-                      subtitulo="Participação de cada grupo no total de vínculos de TI.">
+
+                    <Painel titulo="Quem está no setor"
+                      subtitulo="De cada 100 pessoas empregadas em empresas de tecnologia, quantas são de cada grupo. Clique numa linha para destacá-la.">
                       <Rosca dados={dados} recorte={recorte} />
                     </Painel>
                   </div>
 
                   <div className="gd-grid-2b">
-                    <Painel titulo="Remuneração e interseccionalidade"
-                      subtitulo="Remuneração média mensal dos quatro cruzamentos entre gênero e raça. É aqui que as duas desigualdades aparecem somadas.">
+                    <Painel titulo="Quanto cada grupo recebe"
+                      subtitulo="Salário médio mensal de quem trabalha em TI, separando as pessoas por gênero e cor ao mesmo tempo. Este gráfico não muda com os botões de recorte: ele existe para mostrar o que acontece quando as duas desvantagens caem sobre a mesma pessoa.">
                       <BarrasRemuneracao dados={dados} />
                       <p className="gd-nota">
-                        Média ponderada pelo número de vínculos de cada célula publicável.
-                        Gênero isolado: mulheres recebem {pct(kpis.gapGenero, 0)} do salário masculino.
-                        Raça isolada: pessoas negras recebem {pct(kpis.gapRacial, 0)} do salário de pessoas brancas.
+                        <strong>Como ler:</strong> olhe a primeira e a última barra. Sozinho, o fato
+                        de ser mulher já custa salário: elas recebem {pct(kpis.gapGenero, 0)} do que
+                        os homens recebem. Sozinho, ser uma pessoa negra também custa:{" "}
+                        {pct(kpis.gapRacial, 0)} do que recebe uma pessoa branca. Quando as duas
+                        coisas se encontram na mesma pessoa, a conta não soma, multiplica, e sobra{" "}
+                        {pct(kpis.razaoInterseccional, 0)}.
                       </p>
                     </Painel>
-                    <Painel titulo={`Onde ${rotuloFoco} têm mais espaço`}
-                      subtitulo={`Participação de ${rotuloFoco} nos vínculos de TI por unidade da federação, no ano selecionado. Só UFs com pelo menos mil vínculos publicáveis.`}>
+
+                    <Painel titulo={`Em que estados ${rotuloFoco} têm mais espaço`}
+                      subtitulo="A mesma participação do primeiro indicador, agora estado por estado. Estados com menos de mil empregos em TI ficam fora, porque com pouca gente qualquer variação vira ruído.">
                       <TabelaUf dados={dados} recorte={recorte} categoria={categoriaFoco} />
                     </Painel>
                   </div>
 
-                  <Painel titulo="Quem o setor contratou e quem dispensou"
-                    subtitulo="Fluxo do Novo CAGED no ano selecionado. O saldo mostra se a composição do setor está mudando ou se repetindo.">
+                  <Painel titulo="O setor está mudando de cara?"
+                    subtitulo="Contratações e demissões em empresas de TI ao longo do ano. Se o perfil de quem está entrando for mais diverso que o perfil de quem já está empregado, a composição do setor tende a mudar com o tempo.">
                     <TabelaFluxo dados={dados} recorte={recorte} />
+                    <p className="gd-nota">
+                      <strong>Como ler:</strong> o saldo é quanto o grupo cresceu no ano, contratações
+                      menos demissões. Um saldo positivo em todos os grupos significa que o setor
+                      cresceu para todo mundo, o que não diz nada sobre igualdade por si só. O que
+                      importa é comparar a fatia do grupo entre as contratações com a fatia que ele
+                      já tem no setor, mostrada no primeiro indicador.
+                    </p>
                   </Painel>
+
                 </>
               )}
             </div>

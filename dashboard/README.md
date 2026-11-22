@@ -6,14 +6,21 @@ diversidade no setor de tecnologia brasileiro.
 
 ## Como rodar na sua máquina
 
+Com a credencial já preenchida, um comando basta:
+
 ```bash
-cd dashboard
-npm install
-cp .env.example .env.local   # preencha com a credencial de leitura
-npm run dev
+npm run local
 ```
 
-Abre em `http://localhost:3000`. Os valores de `.env.local` saem de
+Ele instala as dependências, confere se o `.env.local` está completo e sobe o
+servidor em `http://localhost:3000`. Se faltar alguma variável, a mensagem diz
+qual e onde encontrá-la, em vez de falhar na primeira consulta ao banco.
+
+Na primeira vez, antes disso:
+
+```bash
+cd dashboard && cp .env.example .env.local
+``` Os valores de `.env.local` saem de
 `acesso-leitura.txt`, que o script `etl/criar_acesso_leitura.py` gera na raiz do
 projeto. O usuário `dashboard_leitura` só enxerga as views do schema `publico` e
 não escreve nada.

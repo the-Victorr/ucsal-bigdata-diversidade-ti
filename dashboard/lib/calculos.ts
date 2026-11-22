@@ -1,6 +1,6 @@
 import type { Dados, LinhaFunil } from "@/lib/indicadores";
 
-export type Recorte = "sexo" | "raca";
+export type Recorte = "sexo" | "raca" | "cruzado";
 export type Tom = "ink" | "coral" | "teal" | "ochre" | "violet";
 
 /**
@@ -20,22 +20,47 @@ export const CATEGORIAS: Record<Recorte, { nome: string; tom: Tom }[]> = {
     { nome: "Indígena", tom: "violet" },
     { nome: "Sem declaração", tom: "ink" },
   ],
+  // O recorte que a etapa pede: gênero e raça/cor cruzados na mesma pessoa. Só os
+  // quatro grupos majoritários entram, porque abrir amarelas e indígenas aqui
+  // produziria células quase todas suprimidas pelo k-anonimato.
+  cruzado: [
+    { nome: "Homem branco", tom: "ochre" },
+    { nome: "Homem negro", tom: "ink" },
+    { nome: "Mulher branca", tom: "violet" },
+    { nome: "Mulher negra", tom: "coral" },
+  ],
 };
 
 /** Categorias com declaração válida. As demais entram nos totais, não nos percentuais. */
 const DECLARADAS: Record<Recorte, string[]> = {
   sexo: ["Feminino", "Masculino"],
   raca: ["Branca", "Negra", "Amarela", "Indígena"],
+  cruzado: CATEGORIAS.cruzado.map((c) => c.nome),
 };
 
-const chave = (linha: { sexo: string; grupoRacial: string }, recorte: Recorte) =>
-  recorte === "sexo" ? linha.sexo : linha.grupoRacial;
+const CRUZAMENTO: Record<string, Record<string, string>> = {
+  Masculino: { Branca: "Homem branco", Negra: "Homem negro" },
+  Feminino: { Branca: "Mulher branca", Negra: "Mulher negra" },
+};
+
+/** Nome da categoria de uma linha no recorte escolhido. */
+const chave = (linha: { sexo: string; grupoRacial: string }, recorte: Recorte): string => {
+  if (recorte === "sexo") return linha.sexo;
+  if (recorte === "raca") return linha.grupoRacial;
+  // Quem não declarou sexo ou raça/cor não tem cruzamento possível e sai da conta.
+  return CRUZAMENTO[linha.sexo]?.[linha.grupoRacial] ?? "";
+};
 
 export const DEGRAUS = [
   { degrau: 1, nome: "Liderança", descricao: "Direção e gerência" },
   { degrau: 2, nome: "Profissional", descricao: "Ciências e artes" },
   { degrau: 3, nome: "Técnico/Base", descricao: "Técnico e apoio" },
 ];
+
+/** Total do recorte, ignorando linhas que não formam categoria. */
+export function totalDoRecorte(mapa: Map<string, number>, recorte: Recorte) {
+  return CATEGORIAS[recorte].reduce((s, c) => s + (mapa.get(c.nome) ?? 0), 0);
+}
 
 export function somaPor(linhas: LinhaFunil[], recorte: Recorte) {
   const mapa = new Map<string, number>();
@@ -52,7 +77,10 @@ export function participacao(mapa: Map<string, number>, categoria: string, recor
 /** Composição de um degrau do funil, em percentual, já ordenada e colorida. */
 export function composicaoDoDegrau(dados: Dados, degrau: number, recorte: Recorte) {
   const mapa = somaPor(dados.funil.filter((l) => l.degrau === degrau), recorte);
-  const total = [...mapa.values()].reduce((s, v) => s + v, 0);
+  // Só as categorias do recorte entram no total. No recorte cruzado, quem não
+  // declarou sexo ou raça/cor não forma par e ficaria como uma fatia anônima,
+  // impedindo as barras de fechar em 100%.
+  const total = CATEGORIAS[recorte].reduce((s, c) => s + (mapa.get(c.nome) ?? 0), 0);
   return {
     total,
     fatias: CATEGORIAS[recorte]
@@ -124,8 +152,20 @@ export function calcularKpis(dados: Dados, recorte: Recorte) {
   const mulherNegra = remuneracaoDe(dados, "Feminino", "Negra");
   const razaoInterseccional = homemBranco > 0 ? (mulherNegra / homemBranco) * 100 : 0;
 
-  const categoriaFoco = recorte === "sexo" ? "Feminino" : "Negra";
+  const categoriaFoco =
+    recorte === "sexo" ? "Feminino" : recorte === "raca" ? "Negra" : "Mulher negra";
   const funil = afunilamento(dados, categoriaFoco, recorte);
+  const noSetor = participacao(geral, categoriaFoco, recorte);
+
+  // Referência externa de cada recorte, para o número do painel ter com o que ser
+  // comparado. Mulheres e pessoas negras vêm da PNAD Contínua; o grupo cruzado é o
+  // produto das duas proporções na população.
+  const REFERENCIA: Record<string, { valor: number; fonte: string }> = {
+    Feminino: { valor: 51.5, fonte: "da população brasileira (PNAD)" },
+    Negra: { valor: 55.5, fonte: "da população brasileira (PNAD)" },
+    "Mulher negra": { valor: 28.6, fonte: "da população brasileira (PNAD)" },
+  };
+  const referencia = REFERENCIA[categoriaFoco];
 
   return {
     totalVinculos,
@@ -135,6 +175,9 @@ export function calcularKpis(dados: Dados, recorte: Recorte) {
     homemBranco,
     mulherNegra,
     categoriaFoco,
+    noSetor,
+    naLideranca: funil.naLideranca,
+    referencia,
     afunilamento: funil,
     gapGenero: (() => {
       const h = remuneracaoDe(dados, "Masculino", null);

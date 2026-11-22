@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "local": "npm install --silent && node conferir-ambiente.mjs && next dev"
   },
   "dependencies": {
     "@fontsource-variable/manrope": "^5.3.0",
