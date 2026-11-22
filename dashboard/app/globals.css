@@ -1,0 +1,14 @@
+/* O visual do painel vive em components/ui/estilos.ts. Aqui fica só o essencial
+   para a página não impor margens nem fundo próprio. */
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  max-width: 100vw;
+  overflow-x: hidden;
+  background: #40322b;
+  -webkit-font-smoothing: antialiased;
+}
+
+body { min-height: 100svh; display: flex; flex-direction: column; }

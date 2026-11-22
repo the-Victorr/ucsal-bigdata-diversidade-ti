@@ -12,12 +12,26 @@
 !terraform/
 !terraform/**
 
+# Dashboard da etapa 4 (Next.js). Entra inteiro, menos o que é gerado ou secreto.
+!dashboard/
+!dashboard/**
+dashboard/node_modules/
+dashboard/.next/
+dashboard/out/
+dashboard/.vercel/
+dashboard/.env.local
+dashboard/next-env.d.ts
+dashboard/tsconfig.tsbuildinfo
+
 # Em docs/ o repositorio leva so o dicionario de dados.
 # As respostas das etapas sao entregues como PDF, na raiz.
 !docs/
 docs/*
 !docs/dicionario/
 !docs/dicionario/**
+# Prints do dashboard, citados no README.
+!docs/imagens/
+!docs/imagens/**
 
 # Base tratada: é entregável, vai para o repositório.
 !data/
@@ -49,3 +63,4 @@ terraform/terraform.tfvars
 
 acesso-leitura.txt
 terraform/.terraform.lock.hcl
+dashboard/AGENTS.md
