@@ -310,8 +310,8 @@ function Comparativo({ dados, recorte, categoria, rotulo }: {
       <p className="gd-nota">
         <strong>Como ler:</strong>{" "}
         {c.inclusaoSemProgressao
-          ? `a participação de ${rotulo} subiu ${sinal(c.total.variacao)} ponto no setor, então entrou mais gente. Mas o maior ganho foi em ${c.maiorGanho.nome.toLowerCase()}, com ${sinal(c.maiorGanho.variacao)} ponto, e a razão entre a chefia e a base caiu. Houve inclusão sem avanço na progressão de carreira: o setor abriu a porta de entrada mais do que abriu o caminho para cima.`
-          : `comparando ${c.anoAnterior} com ${c.ano}, a participação de ${rotulo} variou ${sinal(c.total.variacao)} ponto no setor, e o maior movimento aconteceu em ${c.maiorGanho.nome.toLowerCase()}.`}
+          ? `a participação de ${rotulo} subiu ${sinal(c.total.variacao)}% no setor, então entrou mais gente. Mas o maior ganho foi em ${c.maiorGanho.nome.toLowerCase()}, com ${sinal(c.maiorGanho.variacao)}%, e a razão entre a chefia e a base caiu. Houve inclusão sem avanço na progressão de carreira: o setor abriu a porta de entrada mais do que abriu o caminho para cima.`
+          : `comparando ${c.anoAnterior} com ${c.ano}, a participação de ${rotulo} variou ${sinal(c.total.variacao)}% no setor, e o maior movimento aconteceu em ${c.maiorGanho.nome.toLowerCase()}.`}
         {" "}Dois anos não bastam para falar em tendência, e variações pequenas podem ser
         apenas oscilação de um ano para o outro.
       </p>
@@ -554,7 +554,7 @@ export default function PainelDiversidade({ inicial }: { inicial: Dados | null }
                   {dados.anoAnterior && (
                     <Painel classe="gd-comparativo"
                       titulo={`O que mudou de ${dados.anoAnterior} para ${dados.filtros.ano}`}
-                      subtitulo={`A mesma participação de ${rotuloFoco}, medida nos dois anos, degrau por degrau. A barra apagada é o ano anterior e a cheia é o ano selecionado. Serve para responder se o setor está mesmo mudando ou só parece.`}
+                      subtitulo={`A mesma participação de ${rotuloFoco}, medida nos dois anos, degrau por degrau. A barra apagada é o ano anterior e a cheia é o ano selecionado. À direita, quanto o percentual daquele degrau subiu ou caiu de um ano para o outro.`}
                       acao={<span className="gd-legend"><span><CalendarRange aria-hidden="true" style={{ width: 13, height: 13 }} />{dados.anoAnterior} contra {dados.filtros.ano}</span></span>}>
                       <Comparativo dados={dados} recorte={recorte} categoria={categoriaFoco} rotulo={rotuloFoco} />
                     </Painel>

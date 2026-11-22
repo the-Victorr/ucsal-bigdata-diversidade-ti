@@ -383,8 +383,8 @@ a participação de um grupo pode subir no setor inteiro e, ao mesmo tempo, a di
 entre a chefia e a base aumentar, se o ganho se concentrar embaixo. Foi exatamente o que
 aconteceu com a população negra entre 2024 e 2025.
 
-O painel mostra as duas medições lado a lado, a variação em pontos percentuais de cada
-degrau, e o índice de afunilamento nos dois anos. O texto de leitura é gerado a partir
+O painel mostra as duas medições lado a lado, quanto o percentual de cada degrau subiu
+ou caiu entre os dois anos, e o índice de afunilamento em cada um. O texto de leitura é gerado a partir
 dos próprios números: quando detecta participação crescendo junto com afunilamento
 piorando, ele nomeia o caso como inclusão sem avanço na progressão de carreira, e sempre
 lembra que dois anos não sustentam afirmação de tendência.
@@ -516,22 +516,25 @@ que a diferença passa de seis pontos.
 
 Com os dois anos carregados dá para medir em vez de inferir:
 
-| | 2024 | 2025 | Diferença |
+| | 2024 | 2025 | Subiu |
 |---|---:|---:|---:|
 | Participação feminina | 37,4% | 37,8% | +0,4% |
 | Participação negra | 38,8% | 39,9% | +1,1% |
-| Total de vínculos publicáveis | 671.587 | 695.978 | +3,6% |
+
+No mesmo período o setor cresceu de 671.587 para 695.978 vínculos publicáveis, 3,6% a
+mais. Esse 3,6% é de outra natureza: é crescimento proporcional do total, enquanto os
+números da tabela acima são a diferença entre dois percentuais.
 
 O setor ficou mais diverso em um ano, nos dois recortes. Mas o número agregado esconde
 onde a mudança aconteceu. Abrindo a participação negra por degrau:
 
-| Degrau | 2024 | 2025 | Diferença |
+| Degrau | 2024 | 2025 | Subiu |
 |---|---:|---:|---:|
 | Técnico/Base | 46,5% | 48,3% | **+1,8%** |
 | Profissional | 33,6% | 34,2% | +0,6% |
 | Liderança | 26,7% | 27,5% | +0,8% |
 
-A base ficou mais diversa três vezes mais rápido que o degrau profissional. O índice de
+A base ganhou 1,8 contra 0,6 do degrau profissional, três vezes mais. O índice de
 afunilamento, que divide a participação na liderança pela participação na base, caiu de
 0,574 para 0,569: a distância entre o topo e a base aumentou, ainda que pouco.
 
