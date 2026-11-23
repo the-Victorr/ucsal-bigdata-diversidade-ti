@@ -18,9 +18,18 @@ export function getPool(): Pool {
       // O Aiven exige TLS. A cadeia não é validada porque o certificado raiz do
       // projeto não é distribuído junto do código, o tráfego continua criptografado.
       ssl: { rejectUnauthorized: false },
-      max: 3,
-      idleTimeoutMillis: 10_000,
-      connectionTimeoutMillis: 15_000,
+      // Uma conexão por instância, e não três. Cada requisição à Vercel pode acordar
+      // uma instância serverless nova, cada uma com seu próprio pool, então o limite
+      // que vale é o do processo isolado e não o do servidor inteiro. Com três por
+      // instância o plano gratuito do Aiven esgota os slots e passa a recusar todo
+      // mundo, inclusive o administrador.
+      max: 1,
+      // Devolve a conexão rápido depois da consulta. A função serverless costuma
+      // morrer logo em seguida, e uma conexão ociosa presa a um processo morto só
+      // sai quando o Postgres expira sozinho.
+      idleTimeoutMillis: 2_000,
+      allowExitOnIdle: true,
+      connectionTimeoutMillis: 12_000,
     });
   }
   return globalForPool.pgPool;
