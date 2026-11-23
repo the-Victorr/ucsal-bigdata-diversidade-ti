@@ -4,6 +4,11 @@ import { carregarDados, carregarOpcoes } from "@/lib/indicadores";
 
 export const dynamic = "force-dynamic";
 
+// Teto explícito, acima dos timeouts do driver em lib/db.ts. Sem declarar, vale o
+// padrão da plataforma, que no plano gratuito é menor que eles: a função morreria
+// antes de o driver desistir e a conexão ficaria pendurada.
+export const maxDuration = 30;
+
 /**
  * Erros de rede contra o Aiven têm um significado prático: o serviço do plano free
  * hiberna depois de algumas semanas sem uso e o host deixa de resolver. Em vez de

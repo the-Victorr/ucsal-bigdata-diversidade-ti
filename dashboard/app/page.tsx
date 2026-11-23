@@ -4,6 +4,11 @@ import { carregarDados, carregarOpcoes, type Dados } from "@/lib/indicadores";
 
 export const dynamic = "force-dynamic";
 
+// Teto explícito, acima dos timeouts do driver em lib/db.ts. Sem declarar, vale o
+// padrão da plataforma, que no plano gratuito é menor que eles: a função morreria
+// antes de o driver desistir e a conexão ficaria pendurada.
+export const maxDuration = 30;
+
 /**
  * A primeira carga acontece no servidor, para a página já chegar preenchida. Se o
  * banco estiver fora do ar a página ainda renderiza, e o componente do cliente

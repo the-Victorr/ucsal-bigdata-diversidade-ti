@@ -25,8 +25,12 @@ function novaConexao(): Client {
     // O Aiven exige TLS. A cadeia não é validada porque o certificado raiz do
     // projeto não é distribuído junto do código, o tráfego continua criptografado.
     ssl: { rejectUnauthorized: false },
-    connectionTimeoutMillis: 12_000,
-    query_timeout: 25_000,
+    // Os dois precisam ficar abaixo do maxDuration das rotas. Se a plataforma
+    // matar a função antes de o driver desistir, o `finally` não chega a rodar e a
+    // conexão vaza, que é o problema que este arquivo existe para evitar. Pior: isso
+    // aconteceria justamente quando o banco está lento, realimentando a saturação.
+    connectionTimeoutMillis: 5_000,
+    query_timeout: 20_000,
   });
 }
 
