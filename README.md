@@ -318,6 +318,11 @@ Os arquivos baixados e os intermediários ficam em `data/raw/` e `data/processed
 
 ## Dashboard
 
+**Acesso:** https://ucsal-bigdata-diversidade-ti.vercel.app
+
+Aberto, sem login. Cada acesso consulta o banco na Aiven na hora: não há cópia dos dados
+dentro da aplicação.
+
 **Execução local, em um comando.** Depois de preencher `dashboard/.env.local` com a
 credencial de leitura que está em `acesso-leitura.txt`:
 
