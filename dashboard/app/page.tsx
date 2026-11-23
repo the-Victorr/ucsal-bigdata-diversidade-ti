@@ -1,4 +1,5 @@
 import PainelDiversidade from "@/components/ui/painel";
+import { comConexao } from "@/lib/db";
 import { carregarDados, carregarOpcoes, type Dados } from "@/lib/indicadores";
 
 export const dynamic = "force-dynamic";
@@ -11,8 +12,10 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   let inicial: Dados | null = null;
   try {
-    const { anos } = await carregarOpcoes();
-    inicial = await carregarDados(anos[0], null);
+    inicial = await comConexao(async (c) => {
+      const { anos } = await carregarOpcoes(c);
+      return carregarDados(c, anos[0], null);
+    });
   } catch (erro) {
     console.error("Carga inicial falhou, o cliente vai tentar de novo:", erro);
   }

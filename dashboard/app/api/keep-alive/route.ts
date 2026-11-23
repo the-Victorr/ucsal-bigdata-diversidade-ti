@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { consultar } from "@/lib/db";
+import { comConexao, consultar } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +10,9 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   try {
-    const [linha] = await consultar<{ agora: string }>("SELECT now() AS agora");
+    const [linha] = await comConexao((c) =>
+      consultar<{ agora: string }>(c, "SELECT now() AS agora"),
+    );
     return NextResponse.json({ ok: true, banco: linha.agora });
   } catch (erro) {
     return NextResponse.json(

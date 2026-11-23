@@ -1,3 +1,5 @@
+import type { Client } from "pg";
+
 import { consultar } from "@/lib/db";
 
 /**
@@ -56,13 +58,13 @@ export type Dados = {
 
 const num = (v: unknown) => (v === null || v === undefined ? 0 : Number(v));
 
-export async function carregarOpcoes() {
+export async function carregarOpcoes(c: Client) {
   const [anos, ufs] = await Promise.all([
     consultar<{ ano: number }>(
-      `SELECT DISTINCT ano FROM publico.vw_funil_lideranca ORDER BY ano DESC`,
+      c,      `SELECT DISTINCT ano FROM publico.vw_funil_lideranca ORDER BY ano DESC`,
     ),
     consultar<{ uf_sigla: string; regiao_nome: string }>(
-      `SELECT DISTINCT uf_sigla, regiao_nome FROM publico.vw_funil_lideranca
+      c,      `SELECT DISTINCT uf_sigla, regiao_nome FROM publico.vw_funil_lideranca
         ORDER BY regiao_nome, uf_sigla`,
     ),
   ]);
@@ -72,16 +74,16 @@ export async function carregarOpcoes() {
   };
 }
 
-export async function carregarDados(ano: number, uf: string | null): Promise<Dados> {
+export async function carregarDados(c: Client, ano: number, uf: string | null): Promise<Dados> {
   const p = [ano, uf];
 
   const [opcoes, funil, remuneracao, porUf, fluxo, funilAnterior] = await Promise.all([
-    carregarOpcoes(),
+    carregarOpcoes(c),
 
     // Composição de cada degrau do funil. O degrau 99 ("Não classificado") fica de
     // fora: ele existe para não inflar a base da pirâmide com CBO ausente.
     consultar(
-      `SELECT degrau_funil, nivel_lideranca_nome, sexo_nome, grupo_racial_ibge,
+      c,      `SELECT degrau_funil, nivel_lideranca_nome, sexo_nome, grupo_racial_ibge,
               SUM(qtd_vinculos) AS vinculos
          FROM publico.vw_funil_lideranca
         WHERE ano = $1 AND ($2::text IS NULL OR uf_sigla = $2) AND degrau_funil < 99
@@ -91,7 +93,7 @@ export async function carregarDados(ano: number, uf: string | null): Promise<Dad
 
     // Remuneração média ponderada pelo número de vínculos de cada célula.
     consultar(
-      `SELECT sexo_nome, grupo_racial_ibge,
+      c,      `SELECT sexo_nome, grupo_racial_ibge,
               SUM(media_remuneracao * qtd_vinculos) / NULLIF(SUM(qtd_vinculos), 0) AS media,
               SUM(qtd_vinculos) AS vinculos
          FROM publico.vw_gap_salarial
@@ -104,7 +106,7 @@ export async function carregarDados(ano: number, uf: string | null): Promise<Dad
     // Recorte territorial. Ignora o filtro de UF de propósito: este painel existe
     // justamente para comparar as unidades da federação entre si.
     consultar(
-      `SELECT uf_sigla, regiao_nome, sexo_nome, grupo_racial_ibge,
+      c,      `SELECT uf_sigla, regiao_nome, sexo_nome, grupo_racial_ibge,
               SUM(qtd_vinculos) AS vinculos
          FROM publico.vw_funil_lideranca
         WHERE ano = $1 AND degrau_funil < 99
@@ -114,7 +116,7 @@ export async function carregarDados(ano: number, uf: string | null): Promise<Dad
 
     // Fluxo do CAGED: quem entrou e quem saiu no ano.
     consultar(
-      `SELECT sexo_nome, grupo_racial_ibge,
+      c,      `SELECT sexo_nome, grupo_racial_ibge,
               SUM(admissoes) AS admissoes,
               SUM(desligamentos) AS desligamentos,
               SUM(saldo) AS saldo
@@ -128,7 +130,7 @@ export async function carregarDados(ano: number, uf: string | null): Promise<Dad
     // Mesma consulta do funil, um ano atrás. Serve ao painel comparativo e volta
     // vazia quando o ano anterior não está carregado, caso em que o painel some.
     consultar(
-      `SELECT degrau_funil, nivel_lideranca_nome, sexo_nome, grupo_racial_ibge,
+      c,      `SELECT degrau_funil, nivel_lideranca_nome, sexo_nome, grupo_racial_ibge,
               SUM(qtd_vinculos) AS vinculos
          FROM publico.vw_funil_lideranca
         WHERE ano = $1 - 1 AND ($2::text IS NULL OR uf_sigla = $2) AND degrau_funil < 99
