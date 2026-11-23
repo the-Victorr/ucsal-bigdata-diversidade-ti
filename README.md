@@ -75,15 +75,15 @@ Três características pesaram nas decisões técnicas. A primeira é o volume: 
 
 ### Problemas identificados na base
 
-**Códigos que colidem entre as bases.** A RAIS numera raça/cor como 2 branca, 4 preta, 8 parda; o CAGED usa a ordem do IBGE, com 1 branca, 2 preta, 3 parda. Sexo também difere: mulher é 2 na RAIS e 3 no CAGED. Carregar os dois sem traduzir trocaria categorias sem gerar erro nenhum.
+Códigos que colidem entre as bases. A RAIS numera raça/cor como 2 branca, 4 preta, 8 parda; o CAGED usa a ordem do IBGE, com 1 branca, 2 preta, 3 parda. Sexo também difere: mulher é 2 na RAIS e 3 no CAGED. Carregar os dois sem traduzir trocaria categorias sem gerar erro nenhum.
 
-**Ausência disfarçada de número.** Os arquivos não deixam campo vazio. Escrevem `9997`, `999999`, `999997` ou textos como `{ñ class}`. Sem tratamento, esses valores entram nas médias como se fossem salário.
+Ausência disfarçada de número. Os arquivos não deixam campo vazio. Escrevem `9997`, `999999`, `999997` ou textos como `{ñ class}`. Sem tratamento, esses valores entram nas médias como se fossem salário.
 
-**Códigos que parecem número e não são.** Ocupação (CBO, 6 dígitos), ramo de atividade (CNAE, 7 dígitos) e município (IBGE, 7 dígitos) têm zero à esquerda, que some se o campo for lido como inteiro.
+Códigos que parecem número e não são. Ocupação (CBO, 6 dígitos), ramo de atividade (CNAE, 7 dígitos) e município (IBGE, 7 dígitos) têm zero à esquerda, que some se o campo for lido como inteiro.
 
-**Inconsistências de preenchimento.** Jornada acima de 44 horas, que não existe na lei, e jornada zero, que é campo em branco.
+Inconsistências de preenchimento. Jornada acima de 44 horas, que não existe na lei, e jornada zero, que é campo em branco.
 
-**Decimal com vírgula e zeros à esquerda** nos valores monetários até 2022, e decimal com ponto a partir de 2023.
+Decimal com vírgula e zeros à esquerda nos valores monetários até 2022, e decimal com ponto a partir de 2023.
 
 ### Decisões e transformações
 
@@ -232,19 +232,19 @@ A leitura é feita em blocos com `pandas.read_csv(chunksize=...)`, que mantém o
 
 Nenhuma credencial, senha, token ou chave está no repositório.
 
-**Credenciais do banco.** Ficam em um arquivo `.env` na raiz, que está no `.gitignore` e nunca foi versionado. O [`.env.example`](.env.example) mostra quais variáveis existem, com os valores em branco. O `etl/load.py` lê a conexão com `python-dotenv` e falha com mensagem clara se alguma variável estiver faltando, em vez de tentar conectar com valor padrão.
+Credenciais do banco. Ficam em um arquivo `.env` na raiz, que está no `.gitignore` e nunca foi versionado. O [`.env.example`](.env.example) mostra quais variáveis existem, com os valores em branco. O `etl/load.py` lê a conexão com `python-dotenv` e falha com mensagem clara se alguma variável estiver faltando, em vez de tentar conectar com valor padrão.
 
-**Token da API do Aiven.** Usado só pelo Terraform, vem de variável de ambiente (`TF_VAR_aiven_api_token`) e está declarado como `sensitive = true`, o que impede o valor de aparecer no log do `apply`. O `terraform.tfvars` real está no `.gitignore`; o repositório leva só o `.example`.
+Token da API do Aiven. Usado só pelo Terraform, vem de variável de ambiente (`TF_VAR_aiven_api_token`) e está declarado como `sensitive = true`, o que impede o valor de aparecer no log do `apply`. O `terraform.tfvars` real está no `.gitignore`; o repositório leva só o `.example`.
 
-**Estado do Terraform.** Os arquivos `.tfstate` guardam credenciais em texto claro e também estão no `.gitignore`.
+Estado do Terraform. Os arquivos `.tfstate` guardam credenciais em texto claro e também estão no `.gitignore`.
 
-**Dados pessoais.** Usamos a versão pública dos microdados, que já vem sem CPF, PIS, nome e data de nascimento. O ETL ainda descarta as colunas de bairro e distrito, que funcionam como quase-identificadores quando combinadas com ocupação e faixa salarial. No banco, as tabelas com o dado completo ficam no esquema interno e as views públicas suprimem qualquer combinação com menos de 5 pessoas. O efeito é grande: das 37.378 linhas do fato de vínculos, 13.239 aparecem na view pública, e das 161.058 do fato de movimentações, 29.087.
+Dados pessoais. Usamos a versão pública dos microdados, que já vem sem CPF, PIS, nome e data de nascimento. O ETL ainda descarta as colunas de bairro e distrito, que funcionam como quase-identificadores quando combinadas com ocupação e faixa salarial. No banco, as tabelas com o dado completo ficam no esquema interno e as views públicas suprimem qualquer combinação com menos de 5 pessoas. O efeito é grande: das 37.378 linhas do fato de vínculos, 13.239 aparecem na view pública, e das 161.058 do fato de movimentações, 29.087.
 
-**Separação de privilégio.** O schema cria o papel `dashboard_leitura` com permissão apenas de leitura sobre o esquema `publico`. Ele é criado sem login e sem senha de propósito, para que nenhuma credencial fique versionada; quem for usar define a senha no momento de conceder o acesso.
+Separação de privilégio. O schema cria o papel `dashboard_leitura` com permissão apenas de leitura sobre o esquema `publico`. Ele é criado sem login e sem senha de propósito, para que nenhuma credencial fique versionada; quem for usar define a senha no momento de conceder o acesso.
 
-**Credenciais do dashboard.** A aplicação publicada usa esse mesmo `dashboard_leitura`, e não o administrador do banco. A credencial vive nas variáveis de ambiente do projeto na Vercel e, localmente, em `dashboard/.env.local`, que o `.gitignore` cobre e que nunca entrou em nenhum commit. Mesmo que alguém obtenha a credencial a partir do servidor, só alcança as views já suprimidas do esquema `publico`: não lê o esquema `dw` e não escreve nada.
+Credenciais do dashboard. A aplicação publicada usa esse mesmo `dashboard_leitura`, e não o administrador do banco. A credencial vive nas variáveis de ambiente do projeto na Vercel e, localmente, em `dashboard/.env.local`, que o `.gitignore` cobre e que nunca entrou em nenhum commit. Mesmo que alguém obtenha a credencial a partir do servidor, só alcança as views já suprimidas do esquema `publico`: não lê o esquema `dw` e não escreve nada.
 
-**Superfície exposta pelo dashboard.** As consultas ficam no servidor, não no navegador. O cliente recebe JSON já agregado e nunca envia SQL, então não existe caminho para injeção a partir da interface. Os únicos parâmetros aceitos pela API são ano e UF, ambos passados como parâmetros ligados da consulta e não concatenados no texto do SQL. O ano é convertido para número e descartado se não for finito; a UF entra como texto comparado contra a coluna, de modo que um valor inventado simplesmente não casa com nenhuma linha.
+Superfície exposta pelo dashboard. As consultas ficam no servidor, não no navegador. O cliente recebe JSON já agregado e nunca envia SQL, então não existe caminho para injeção a partir da interface. Os únicos parâmetros aceitos pela API são ano e UF, ambos passados como parâmetros ligados da consulta e não concatenados no texto do SQL. O ano é convertido para número e descartado se não for finito; a UF entra como texto comparado contra a coluna, de modo que um valor inventado simplesmente não casa com nenhuma linha.
 
 ## Execução
 
@@ -318,22 +318,19 @@ Os arquivos baixados e os intermediários ficam em `data/raw/` e `data/processed
 
 ## Dashboard
 
-**Acesso:** https://ucsal-bigdata-diversidade-ti.vercel.app
+https://ucsal-bigdata-diversidade-ti.vercel.app
 
-Aberto, sem login. Cada acesso consulta o banco na Aiven na hora: não há cópia dos dados
-dentro da aplicação.
+Aberto, sem login. Cada acesso consulta o banco na Aiven na hora.
 
-**Execução local, em um comando.** Depois de preencher `dashboard/.env.local` com a
-credencial de leitura que está em `acesso-leitura.txt`:
+Para rodar na sua máquina, preencha `dashboard/.env.local` com a credencial de leitura
+que está em `acesso-leitura.txt` e use um comando só:
 
 ```bash
 cd dashboard && npm run local
 ```
 
-O comando instala as dependências, confere o arquivo de ambiente e sobe o painel em
-`http://localhost:3000`, lendo o mesmo banco na Aiven que a versão publicada lê. Não há
-cópia local dos dados: se o banco estiver fora do ar, o painel avisa em vez de mostrar
-números defasados.
+Ele instala as dependências, confere o arquivo de ambiente e sobe o painel em
+`http://localhost:3000`, lendo o mesmo banco que a versão publicada lê.
 
 O passo a passo para publicar na Vercel está em [`dashboard/README.md`](dashboard/README.md),
 e o deploy está automatizado em [`dashboard/deploy.sh`](dashboard/deploy.sh).
@@ -346,84 +343,93 @@ e o deploy está automatizado em [`dashboard/deploy.sh`](dashboard/deploy.sh).
 
 ### Como ele conversa com o banco
 
-O navegador não fala PostgreSQL, então existe uma camada de API no meio. Cada acesso
-ao painel dispara uma rota no servidor da Vercel, que abre conexão com o PostgreSQL da
+O navegador não fala PostgreSQL, então existe uma camada de API no meio. Cada acesso ao
+painel dispara uma rota no servidor da Vercel, que abre conexão com o PostgreSQL da
 Aiven, consulta as views do schema `publico` e devolve o resultado agregado em JSON.
-Não há cópia dos dados dentro da aplicação: desligar o banco derruba o painel, o que é
-a prova de que a consulta é mesmo ao vivo.
+A aplicação não guarda cópia dos dados, então desligar o banco derruba o painel.
 
-O usuário usado é o `dashboard_leitura`, que só enxerga o schema `publico` e não
-escreve. Mesmo que alguém consiga a credencial a partir do servidor, não alcança as
-tabelas do schema `dw` nem altera nada.
+O usuário é o `dashboard_leitura`, que só enxerga o schema `publico` e não escreve.
+Mesmo que alguém consiga a credencial a partir do servidor, as tabelas do schema `dw`
+continuam fora de alcance.
+
+Cada requisição abre uma conexão e a fecha ao terminar. Manter um pool entre chamadas
+não funciona aqui: depois de responder, a Vercel congela a instância em vez de
+encerrá-la, o temporizador de ocioso do pool para junto, e a conexão fica presa até o
+Postgres expirá-la. Em teste, doze acessos simultâneos deixaram catorze conexões
+penduradas, de um limite de vinte no plano gratuito, e o banco passou a recusar login
+de todos os usuários.
 
 ### Os quatro indicadores
 
 Os três primeiros botões do painel escolhem o recorte: gênero, raça/cor, ou os dois
-cruzados na mesma pessoa. Os indicadores respondem ao recorte escolhido, de modo que no
-modo cruzado todos os quatro passam a ser interseccionais.
+cruzados na mesma pessoa. Os indicadores acompanham o recorte, então no modo cruzado
+todos os quatro ficam interseccionais.
 
-**No setor.** Percentual que o grupo ocupa entre todos os empregos de TI. É a linha de
-base de tudo o mais: sem saber quanto espaço o grupo tem no setor, nenhum número sobre
-chefia ou salário tem com o que ser comparado. Cada valor vem acompanhado da proporção
-do mesmo grupo na população brasileira, segundo a PNAD, para separar o que é
-sub-representação no setor do que é composição do país. Mulheres são 37,8% do setor e
-51,5% da população; mulheres negras, 15,6% contra 28,6%.
+#### No setor
 
-**Na chefia.** O mesmo percentual, agora só entre os cargos de direção e gerência. Lido
-contra o indicador anterior, mostra se o grupo mantém, ganha ou perde espaço ao subir.
-Mulheres negras são 15,6% do setor e 12,4% da chefia.
+Percentual que o grupo ocupa entre todos os empregos de TI. Serve de referência para os
+outros três: sem saber quanto espaço o grupo tem no setor, nenhum número sobre chefia ou
+salário pode ser interpretado.
 
-**A cada R$ 100 de um homem branco.** Quanto recebe, em média, uma mulher negra no mesmo
-setor: R$ 45. Este é o único indicador que não muda com o recorte, de propósito. Ele
-existe para manter visível o cruzamento das duas desigualdades mesmo quando o usuário
-está olhando gênero ou raça isoladamente.
+Cada valor aparece ao lado da proporção do mesmo grupo na população brasileira, segundo
+a PNAD, o que separa sub-representação no setor de composição do país. Mulheres são
+37,8% do setor e 51,5% da população. Mulheres negras, 15,6% contra 28,6%.
 
-**Onde o grupo mais perde espaço.** Entre os três degraus da carreira, aquele em que o
-grupo tem a menor fatia dos postos. Para pessoas negras é a chefia, com 27,5%. Para
-mulheres e para mulheres negras é o degrau profissional, com 30,5% e 10,3%, e essa
-diferença entre os recortes é o achado mais interessante do projeto.
+#### Na chefia
+
+O mesmo percentual, agora só entre os cargos de direção e gerência. Comparado ao
+indicador anterior, mostra se o grupo mantém, ganha ou perde espaço ao subir. Mulheres
+negras são 15,6% do setor e 12,4% da chefia.
+
+#### A cada R$ 100 de um homem branco
+
+Quanto recebe, em média, uma mulher negra no mesmo setor: R$ 45. É o único indicador que
+não muda com o recorte, de propósito, para manter o cruzamento das duas desigualdades
+visível mesmo quando o usuário está olhando gênero ou raça isoladamente.
+
+#### Onde o grupo mais perde espaço
+
+Entre os três degraus da carreira, aquele em que o grupo tem a menor fatia dos postos.
+Para pessoas negras é a chefia, com 27,5%. Para mulheres e para mulheres negras é o
+degrau profissional, com 30,5% e 10,3%. A diferença entre os dois recortes rendeu a
+parte mais interessante da análise, e está explicada mais abaixo.
 
 ### O painel comparativo
 
-Além dos quatro indicadores, o dashboard traz um painel que mede a mudança entre o ano
-selecionado e o anterior, degrau por degrau. Ele existe porque o número agregado engana:
-a participação de um grupo pode subir no setor inteiro e, ao mesmo tempo, a distância
-entre a chefia e a base aumentar, se o ganho se concentrar embaixo. Foi exatamente o que
-aconteceu com a população negra entre 2024 e 2025.
+O dashboard também mede a mudança entre o ano selecionado e o anterior, degrau por
+degrau. O número agregado sozinho engana: a participação de um grupo pode subir no setor
+inteiro enquanto a distância entre a chefia e a base aumenta, se o ganho se concentrar
+embaixo. Foi o que aconteceu com a população negra entre 2024 e 2025.
 
-O painel mostra as duas medições lado a lado, quanto o percentual de cada degrau subiu
-ou caiu entre os dois anos, e o índice de afunilamento.
+O painel mostra as duas medições lado a lado, quanto o percentual de cada degrau variou,
+e o índice de afunilamento. Na interface o índice aparece multiplicado por cem e já
+traduzido: em vez de `0,569`, o painel diz 56,9 para cada 100, e explica que seriam 100
+se a chefia tivesse a mesma composição da base. É o mesmo número da análise abaixo,
+escrito de um jeito que dispensa saber o que é um índice.
 
-Na interface esse índice aparece multiplicado por cem e com a leitura embutida: em vez de
-`0,569`, o painel diz **56,9 para cada 100**, e explica que seriam 100 se a chefia tivesse
-a mesma composição da base. É o mesmo número da análise acima, escrito de um jeito que
-dispensa saber o que é um índice.
+A casa decimal importa. Entre 2024 e 2025 o índice vai de 57,5 para 56,9, e arredondado
+para inteiro os dois viram 57. O painel então afirmaria que nada mudou logo acima do
+texto que explica a queda.
 
-A casa decimal não é capricho. Entre 2024 e 2025 o índice vai de 57,5 para 56,9, e
-arredondando para inteiro os dois virariam 57: o painel afirmaria que nada mudou logo
-acima do texto que explica a queda. A precisão exibida precisa ser fina o bastante para
-carregar o achado, em vez de apagá-lo. O texto de leitura é gerado a partir
-dos próprios números: quando detecta participação crescendo junto com afunilamento
-piorando, ele nomeia o caso como inclusão sem avanço na progressão de carreira, e sempre
-lembra que dois anos não sustentam afirmação de tendência.
+O texto de leitura é gerado a partir dos próprios números. Quando detecta participação
+crescendo junto com afunilamento piorando, ele nomeia o caso como inclusão sem avanço na
+progressão de carreira, e lembra que dois anos não sustentam afirmação de tendência.
 
-Ele só aparece quando o ano anterior está carregado. Selecionando 2024, que é o primeiro
-ano da base, o painel some em vez de mostrar comparação vazia.
+O painel só aparece quando o ano anterior está carregado. Em 2024, primeiro ano da base,
+ele some.
 
 ### Filtros
 
 Recorte da análise, com três modos: gênero, raça/cor, e os dois cruzados. Ano de
 referência. Unidade da federação, com as 27 ou o Brasil inteiro.
 
-Ano e UF vão ao banco e refazem a consulta. O recorte é recálculo no navegador, porque
-a API já devolve as linhas abertas por degrau, sexo e raça/cor, e refazer a consulta
-para trocar de recorte seria desperdício.
-
+Ano e UF vão ao banco e refazem a consulta. O recorte é recalculado no navegador, já que
+a API devolve as linhas abertas por degrau, sexo e raça/cor.
 
 ## O que os dados mostram
 
 Os números abaixo saem das views do banco para 2025, sobre os 695.978 vínculos que
-passam pela supressão de privacidade. Eles são a resposta do projeto às duas ODS.
+passam pela supressão de privacidade.
 
 ### A desigualdade racial tem o formato clássico de funil
 
@@ -437,8 +443,8 @@ A base do setor é quase equilibrada. A cada degrau que se sobe, a participaçã
 cai, e no topo ela é pouco mais da metade do que era embaixo. O índice de afunilamento,
 que divide a participação na liderança pela participação na base, fica em 0,569.
 
-Isso é o que a ODS 18 prevê e o dado confirma sem ambiguidade: o problema não é o
-acesso ao setor, é a progressão dentro dele.
+O acesso ao setor, portanto, está razoavelmente aberto. A desigualdade que a ODS 18
+descreve aparece na progressão dentro dele.
 
 ### A desigualdade de gênero tem outro formato, e esse foi o achado inesperado
 
@@ -448,28 +454,25 @@ acesso ao setor, é a progressão dentro dele.
 | Profissional | 30,5% |
 | Técnico/Base | 42,3% |
 
-Se olhássemos só o topo e a base, concluiríamos que não há teto de vidro em TI, porque
-a participação feminina na liderança (44,2%) é maior que na base (42,3%). O índice de
-afunilamento daria 1,05 e o relatório terminaria aqui, errado.
+Olhando só o topo e a base, a conclusão seria que TI não tem teto de vidro: a
+participação feminina na liderança, 44,2%, supera a da base, 42,3%. O índice de
+afunilamento daria 1,05 e a análise pararia por aí, errada.
 
 O estrangulamento está no meio. O degrau profissional, que pela CBO concentra os
 analistas, desenvolvedores e demais ocupações técnicas qualificadas, tem 30,5% de
 mulheres, quase doze pontos abaixo da base.
 
-Uma leitura plausível é que mulheres entram em empresas de TI principalmente por
-funções administrativas, de atendimento e de gestão, e não pelas funções técnicas. Isso
-explicaria tanto a base alta quanto a liderança alta: a chefia medida aqui é o grande
-grupo 1 da CBO inteiro, que inclui gerência administrativa, comercial e de pessoas, não
-apenas liderança técnica.
+Uma leitura plausível é que mulheres entram em empresas de TI sobretudo por funções
+administrativas, de atendimento e de gestão. Isso explicaria tanto a base alta quanto a
+liderança alta, já que a chefia medida aqui é o grande grupo 1 da CBO inteiro, que
+inclui gerência administrativa, comercial e de pessoas.
 
-Essa é uma hipótese, não uma conclusão. Para confirmá-la seria preciso abrir o CBO em
-famílias de quatro dígitos em vez do grande grupo, e separar a gerência de TI das
-demais gerências. O grão atual do banco não permite isso, e inventar a conclusão a
-partir do dado que temos seria ir além do que ele sustenta.
+Trata-se de hipótese. Confirmá-la exigiria abrir o CBO em famílias de quatro dígitos e
+separar a gerência de TI das demais, o que o grão atual do banco não permite.
 
-De todo modo, a implicação para a ODS 5 muda. Política de promoção de mulheres a cargos
-de chefia não resolveria o gargalo observado, porque o gargalo não está lá. Ele está na
-entrada da carreira técnica.
+A implicação para a ODS 5 muda de todo modo. Política de promoção de mulheres a cargos
+de chefia não resolveria o gargalo observado, porque ele está na entrada da carreira
+técnica.
 
 ### Cruzando os dois recortes, aparece o que nenhum deles mostrava sozinho
 
@@ -481,8 +484,8 @@ Participação de cada grupo em cada degrau, em percentual da linha:
 | Profissional | 44,8% | 24,7% | 20,3% | 10,3% |
 | Técnico/Base | 29,7% | 27,9% | 21,4% | 21,0% |
 
-A base é quase equilibrada entre os quatro grupos. A partir dali cada um segue um
-caminho diferente, e os caminhos não se parecem.
+A base é quase equilibrada entre os quatro grupos, e a partir dali cada um segue um
+caminho diferente.
 
 Homens brancos ganham espaço já no degrau técnico, saltando de 29,7% para 44,8%.
 Mulheres negras fazem o inverso no mesmo ponto, caindo de 21,0% para 10,3%, e não
@@ -490,18 +493,17 @@ recuperam no topo. Homens negros perdem espaço de forma contínua, de 27,9% at�
 Mulheres brancas são o único grupo que perde no meio e recupera em cima, indo de 21,4%
 na base a 32,0% na liderança.
 
-Esse último contraste é o resultado mais desconfortável do projeto. Na chefia das
-empresas de TI, mulheres brancas ocupam 32,0% dos postos e homens negros 15,6%, o dobro.
-Em um setor onde homens são a maioria, isso indica que a cor pesa mais que o gênero no
-acesso aos cargos de direção, e que tratar "mulheres" e "pessoas negras" como dois
-blocos homogêneos esconde quem de fato está ficando de fora.
+Esse último contraste é o mais desconfortável. Na chefia das empresas de TI, mulheres
+brancas ocupam 32,0% dos postos e homens negros 15,6%, o dobro. Em um setor onde homens
+são maioria, isso indica que a cor pesa mais que o gênero no acesso aos cargos de
+direção, e que tratar "mulheres" e "pessoas negras" como dois blocos homogêneos esconde
+quem está ficando de fora.
 
-Vale dizer o que esse número não prova. Ele descreve a composição dos cargos, não o
-processo que levou a ela, e a chefia medida aqui inclui gerência administrativa,
-comercial e de pessoas, não apenas liderança técnica. Pode ser que mulheres brancas
-estejam concentradas em gerências de área e homens negros em funções técnicas sem
-cargo de gestão. Verificar isso exigiria abrir o CBO em famílias de quatro dígitos, o
-que o grão atual do banco não permite.
+O número descreve a composição dos cargos, e não o processo que levou a ela. A chefia
+medida aqui inclui gerência administrativa, comercial e de pessoas. Pode ser que
+mulheres brancas estejam concentradas em gerências de área e homens negros em funções
+técnicas sem cargo de gestão. Verificar isso exigiria o mesmo detalhamento de CBO que o
+banco não tem.
 
 ### As duas desigualdades se multiplicam
 
@@ -510,15 +512,14 @@ que o grão atual do banco não permite.
 | Homens | R$ 9.526 | R$ 6.189 |
 | Mulheres | R$ 7.121 | R$ 4.308 |
 
-Isoladamente, mulheres recebem 73,1% do salário masculino e pessoas negras recebem
-63,4% do salário de pessoas brancas. Se os dois efeitos fossem independentes e se
-compusessem por multiplicação, uma mulher negra receberia 46,4% do que recebe um homem
-branco. O valor observado é 45,2%.
+Isoladamente, mulheres recebem 73,1% do salário masculino e pessoas negras recebem 63,4%
+do salário de pessoas brancas. Se os dois efeitos fossem independentes e se compusessem
+por multiplicação, uma mulher negra receberia 46,4% do que recebe um homem branco. O
+valor observado é 45,2%.
 
-A proximidade entre o previsto e o observado é o resultado mais concreto do projeto:
-gênero e raça não se somam, se multiplicam, e ainda há uma penalidade adicional de
-pouco mais de um ponto que nenhum dos dois recortes isolados explica. É exatamente por
-isso que ODS 5 e ODS 18 precisam ser analisadas juntas e não em relatórios separados.
+Os dois efeitos se compõem, então, de forma quase multiplicativa, com uma penalidade
+adicional de pouco mais de um ponto que nenhum dos recortes isolados explica. É a razão
+prática para analisar ODS 5 e ODS 18 juntas.
 
 ### O fluxo de contratações sugere movimento
 
